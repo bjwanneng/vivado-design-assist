@@ -1,0 +1,12 @@
+Starting Synthesis : Time (s): cpu = 00:00:05 ; elapsed = 00:00:08 . Memory (MB): peak = 1024.5 ; gain = 256.3
+
+Running synth_design
+INFO: [Synth 8-256] done synth_design
+WARNING: [Synth 8-327] inferred latch for signal 'tmp_state' in module 'ctrl_fsm'
+WARNING: [Synth 8-327] inferred latch for signal 'next_data' in module 'data_handler'
+WARNING: [Synth 8-327] inferred latch for signal 'count_out' in module 'counter'
+CRITICAL WARNING: [Synth 8-524] non-dedicated clock route for net 'clk_div' in module 'clk_gen'
+WARNING: [Synth 8-3936] 'ram_inst/ram' is not inferred as a dedicated Block RAM resource
+INFO: [Synth 8-6014] Port 'debug_out' is unconnected in module 'top_wrapper'
+
+Time (s): cpu = 00:02:35 ; elapsed = 00:02:42 . Memory (MB): peak = 2048.7 ; gain = 512.1

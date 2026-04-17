@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>VMC - Vivado Methodology Checker</title>
+<style>
+:root {
+  --bg: #1e1e2e;
+  --card: #2a2a3d;
+  --border: #3a3a50;
+  --text: #e0e0e8;
+  --muted: #8888a0;
+  --accent: #7c3aed;
+  --fail: #ef4444;
+  --warn: #f59e0b;
+  --pass: #22c55e;
+  --critical: #dc2626;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  padding: 16px;
+  overflow-y: auto;
+  height: 100vh;
+}
+
+/* Header */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 12px;
+}
+.header h1 { font-size: 14px; font-weight: 600; }
+.score {
+  font-size: 20px; font-weight: 700;
+  padding: 4px 12px; border-radius: 8px;
+}
+.score.pass { background: rgba(34,197,94,0.15); color: var(--pass); }
+.score.fail { background: rgba(239,68,68,0.15); color: var(--fail); }
+
+/* Status */
+.status {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--muted);
+}
+.spinner {
+  width: 32px; height: 32px;
+  border: 3px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 12px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Tabs */
+.tabs { display: flex; gap: 4px; margin-bottom: 12px; flex-wrap: wrap; }
+.tab {
+  padding: 4px 10px; border-radius: 6px; font-size: 12px;
+  cursor: pointer; background: var(--card);
+  border: 1px solid var(--border); color: var(--muted);
+  transition: all 0.2s;
+}
+.tab.active { background: var(--accent); color: white; border-color: var(--accent); }
+.tab:hover { border-color: var(--accent); }
+
+/* Project info */
+.project-info {
+  font-size: 11px; color: var(--muted); margin-bottom: 10px;
+  word-break: break-all;
+}
+
+/* Issue Cards */
+.issue-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 8px; padding: 10px 12px; margin-bottom: 8px;
+  cursor: pointer; transition: border-color 0.2s;
+}
+.issue-card:hover { border-color: var(--accent); }
+.issue-card .title {
+  font-size: 12px; font-weight: 500;
+  display: flex; justify-content: space-between; align-items: center;
+}
+.issue-card .detail {
+  display: none; margin-top: 8px; padding-top: 8px;
+  border-top: 1px solid var(--border);
+  font-size: 11px; color: var(--muted); line-height: 1.6;
+}
+.issue-card.expanded .detail { display: block; }
+
+.sev-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  display: inline-block; margin-right: 6px;
+}
+.sev-dot.critical { background: var(--critical); }
+.sev-dot.fail { background: var(--fail); }
+.sev-dot.warn { background: var(--warn); }
+.sev-dot.info { background: #60a5fa; }
+
+.badge {
+  display: inline-block; padding: 2px 6px;
+  border-radius: 4px; font-size: 10px; font-weight: 600;
+}
+.badge.b-critical { background: rgba(220,38,38,0.15); color: var(--critical); }
+.badge.b-fail { background: rgba(239,68,68,0.15); color: var(--fail); }
+.badge.b-warn { background: rgba(245,158,11,0.15); color: var(--warn); }
+.badge.b-info { background: rgba(96,165,250,0.15); color: #60a5fa; }
+
+.fix {
+  background: rgba(34,197,94,0.08);
+  border: 1px solid rgba(34,197,94,0.2);
+  border-radius: 6px; padding: 8px; margin-top: 6px;
+  font-family: 'Consolas', monospace;
+  font-size: 11px; white-space: pre-wrap; color: #a0d0a0;
+  position: relative;
+}
+.copy-btn {
+  position: absolute; top: 4px; right: 4px;
+  background: none; border: 1px solid rgba(34,197,94,0.3);
+  color: var(--pass); padding: 2px 8px; border-radius: 4px;
+  cursor: pointer; font-size: 10px;
+}
+
+/* Buttons */
+.btn {
+  width: 100%; padding: 8px; border: none; border-radius: 8px;
+  font-size: 13px; font-weight: 500; cursor: pointer; margin-top: 8px;
+}
+.btn-primary { background: var(--accent); color: white; }
+.btn-primary:hover { opacity: 0.9; }
+.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.connected-badge {
+  display: inline-block; padding: 2px 8px; border-radius: 4px;
+  font-size: 11px; color: var(--pass);
+  background: rgba(34,197,94,0.1);
+  margin-bottom: 8px;
+}
+</style>
+</head>
+<body>
+
+<div id="app">
+  <div class="header">
+    <h1>VMC - Methodology Checker</h1>
+    <div id="scoreDisplay" class="score pass" style="display:none">--</div>
+  </div>
+
+  <!-- State: init / waiting -->
+  <div id="stateWaiting" class="status">
+    <div class="spinner"></div>
+    <p id="waitingText">Scanning for Vivado...</p>
+    <p class="project-info" id="projectInfo"></p>
+  </div>
+
+  <!-- State: ready -->
+  <div id="stateReady" style="display:none">
+    <div class="connected-badge">Vivado Connected</div>
+    <p class="project-info" id="projectInfoReady"></p>
+    <button class="btn btn-primary" onclick="runNow()">Analyze Now</button>
+    <p style="color:var(--muted);font-size:11px;text-align:center;margin-top:8px;">
+      Hooks injected. Reports auto-generate after each build stage.
+    </p>
+  </div>
+
+  <!-- State: analyzing -->
+  <div id="stateAnalyzing" class="status" style="display:none">
+    <div class="spinner"></div>
+    <p>Analyzing methodology compliance...</p>
+  </div>
+
+  <!-- State: results -->
+  <div id="stateResults" style="display:none">
+    <div class="tabs">
+      <div class="tab active" data-filter="all">All</div>
+      <div class="tab" data-filter="CRITICAL">CRITICAL</div>
+      <div class="tab" data-filter="FAIL">FAIL</div>
+      <div class="tab" data-filter="WARN">WARN</div>
+    </div>
+    <div id="issueList"></div>
+    <button class="btn btn-primary" onclick="runNow()">Re-Analyze</button>
+  </div>
+</div>
+
+<script>
+const states = {
+  waiting: document.getElementById('stateWaiting'),
+  ready: document.getElementById('stateReady'),
+  analyzing: document.getElementById('stateAnalyzing'),
+  results: document.getElementById('stateResults'),
+};
+
+function showState(name) {
+  Object.values(states).forEach(el => el.style.display = 'none');
+  if (states[name]) states[name].style.display = '';
+}
+
+// Listen for backend state changes
+window.addEventListener('vmc-state', (e) => {
+  const state = e.detail;
+  showState(state);
+  if (state === 'results' && pywebview.api.analysis_result) {
+    pywebview.api.analysis_result.then(renderResults);
+  }
+});
+
+// Tab filtering
+let currentFilter = 'all';
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    currentFilter = tab.dataset.filter;
+    renderIssues(window._issues || []);
+  });
+});
+
+function runNow() {
+  pywebview.api.run_now();
+  showState('analyzing');
+}
+
+function renderResults(data) {
+  if (!data || data.error) {
+    showState('results');
+    document.getElementById('issueList').innerHTML =
+      '<p style="color:var(--fail)">' + (data ? data.error : 'No data') + '</p>';
+    return;
+  }
+
+  const scoreEl = document.getElementById('scoreDisplay');
+  scoreEl.textContent = data.score;
+  scoreEl.className = 'score ' + (data.score >= 80 ? 'pass' : 'fail');
+  scoreEl.style.display = '';
+
+  window._issues = data.issues || [];
+  renderIssues(window._issues);
+  showState('results');
+}
+
+function renderIssues(issues) {
+  const list = document.getElementById('issueList');
+  const filtered = currentFilter === 'all'
+    ? issues
+    : issues.filter(i => i.severity === currentFilter);
+
+  list.innerHTML = filtered.map(issue => {
+    const sev = issue.severity.toLowerCase();
+    const bclass = sev === 'critical' ? 'b-critical' : 'b-' + sev;
+    const fixHtml = issue.fix_suggestion
+      ? '<div class="fix">' + esc(issue.fix_suggestion)
+        + '<button class="copy-btn" onclick="event.stopPropagation();copyFix(this,'
+        + JSON.stringify(JSON.stringify(issue.fix_suggestion))
+        + ')">Copy</button></div>'
+      : '';
+    const refHtml = issue.ug949_ref
+      ? '<p style="margin-top:4px;color:#a0a0d0;font-size:10px">UG949: ' + esc(issue.ug949_ref) + '</p>'
+      : '';
+    return '<div class="issue-card" onclick="this.classList.toggle(\'expanded\')">'
+      + '<div class="title"><span>'
+      + '<span class="sev-dot ' + sev + '"></span>'
+      + esc(issue.rule_id) + ': ' + esc(issue.rule_name)
+      + '</span><span class="badge ' + bclass + '">' + issue.severity + '</span></div>'
+      + '<div class="detail">'
+      + '<p>' + esc(issue.message) + '</p>'
+      + (issue.detail ? '<p style="margin-top:4px">' + esc(issue.detail) + '</p>' : '')
+      + fixHtml + refHtml
+      + '</div></div>';
+  }).join('');
+}
+
+function esc(s) {
+  const d = document.createElement('div');
+  d.textContent = s || '';
+  return d.innerHTML;
+}
+
+function copyFix(btn, text) {
+  navigator.clipboard.writeText(text);
+  btn.textContent = 'Copied!';
+  setTimeout(() => btn.textContent = 'Copy', 1500);
+}
+
+showState('waiting');
+</script>
+</body>
+</html>

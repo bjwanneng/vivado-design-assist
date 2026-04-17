@@ -1,0 +1,8 @@
+Starting Routing : Time (s): cpu = 00:10:30 ; elapsed = 00:10:35
+
+Running route_design
+CRITICAL WARNING: [Route 35-139] There are 5 unrouted nets in the design
+WARNING: [Route 35-243] Router congestion detected in region X15Y10
+ERROR: [Route 35-25] Routing failed to complete
+
+Time (s): cpu = 00:15:22 ; elapsed = 00:15:30

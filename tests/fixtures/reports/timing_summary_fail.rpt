@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- This is a sample timing summary report for testing -->
+------------------------------------------------------------------------------------------------
+| Timing Summary
+------------------------------------------------------------------------------------------------
+| WNS: -0.342
+| TNS: -1.856
+| WHS: 0.056
+| THS: 0.000
+|
+| Failing Endpoints: 12
+| Total Endpoints: 1580
+------------------------------------------------------------------------------------------------
+
+Slack (setup): -0.342 ns (VIOLATED)
+  Source: top_module/data_proc/U1/clk_div/counter_reg[3]/C
+  Destination: top_module/data_proc/U2/fifo_inst/din_reg[5]/D
+  Requirement: 4.000 ns
+  Data Path Delay: 4.342 ns
+  Logic Delay: 2.856 ns
+  Net Delay (interconnect): 1.486 ns
+  Clock Path Skew: 0.012 ns
+
+Slack (setup): -0.156 ns (VIOLATED)
+  Source: top_module/ctrl/state_reg[2]/C
+  Destination: top_module/ctrl/output_reg[7]/D
+  Requirement: 4.000 ns
+  Data Path Delay: 4.156 ns
+  Logic Delay: 1.200 ns
+  Net Delay (interconnect): 2.956 ns
+  Clock Path Skew: -0.005 ns

@@ -1,0 +1,31 @@
+Starting Synthesis : Time (s): cpu = 00:00:05 ; elapsed = 00:00:08
+
+Running synth_design
+WARNING: [Synth 8-327] inferred latch for signal 'state_tmp' in module 'fsm'
+CRITICAL WARNING: [Synth 8-524] non-dedicated clock route for net 'clk_gen'
+WARNING: [Synth 8-3936] 'ram_0' is not inferred as a dedicated Block RAM resource
+
+Time (s): cpu = 00:02:00 ; elapsed = 00:02:10
+
+Starting opt_design : Time (s): cpu = 00:02:10 ; elapsed = 00:02:12
+
+Running opt_design
+WARNING: [Opt 31-68] DONT_TOUCH prevented optimization on 'debug_inst'
+
+Time (s): cpu = 00:03:00 ; elapsed = 00:03:10
+
+Starting Placement : Time (s): cpu = 00:03:10 ; elapsed = 00:03:12
+
+Running place_design
+Congestion Level 3 in Region X8Y20:W12xH12
+WNS = -0.300
+WNS = -0.200
+
+Time (s): cpu = 00:06:00 ; elapsed = 00:06:15
+
+Starting Routing : Time (s): cpu = 00:06:15 ; elapsed = 00:06:17
+
+Running route_design
+WNS = -0.150
+
+Time (s): cpu = 00:10:00 ; elapsed = 00:10:30

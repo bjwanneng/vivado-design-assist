@@ -1,0 +1,75 @@
+# Vivado 消息码到 UG949 规则的映射
+
+synthesis:
+  "Synth 8-327":
+    description: "Inferred latch"
+    rule: "SYNTH-002"
+    severity: "FAIL"
+    ug949_ref: "Ch3: Latch"
+
+  "Synth 8-3352":
+    description: "Multi-driven signal"
+    rule: "SYNTH-003"
+    severity: "FAIL"
+
+  "Synth 8-3936":
+    description: "Not inferred as dedicated hardware"
+    rule: "SYNTH-001"
+    severity: "WARN"
+
+  "Synth 8-524":
+    description: "Non-dedicated clock route"
+    rule: "SYNTH-006"
+    severity: "FAIL"
+
+  "Synth 8-5537":
+    description: "RAM not using block RAM"
+    rule: "SYNTH-001"
+    severity: "WARN"
+
+  "Synth 8-5543":
+    description: "Gated clock detected"
+    rule: "SYNTH-012"
+    severity: "WARN"
+
+  "Synth 8-6416":
+    description: "DONT_TOUCH preventing optimization"
+    rule: "SYNTH-008"
+    severity: "WARN"
+
+  "Synth 8-6014":
+    description: "Unconnected port"
+    rule: "SYNTH-005"
+    severity: "WARN"
+
+implementation:
+  "Place 30-487":
+    description: "Congestion detected"
+    rule: "PLACE-001"
+    severity: "FAIL"
+
+  "Place 30-494":
+    description: "Placement failed"
+    rule: "PLACE-002"
+    severity: "CRITICAL"
+
+  "Route 35-139":
+    description: "Unrouted nets"
+    rule: "ROUTE-001"
+    severity: "CRITICAL"
+
+  "Route 35-243":
+    description: "Router congestion"
+    rule: "ROUTE-002"
+    severity: "FAIL"
+
+methodology:
+  "TIMING-6":
+    description: "Clock groups needed"
+    rule: "CONST-004"
+    severity: "FAIL"
+
+  "TIMING-14":
+    description: "Paths with no clock"
+    rule: "CONST-006"
+    severity: "FAIL"

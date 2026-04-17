@@ -1,0 +1,51 @@
+# UG949 方法论规则配置
+# 可通过此文件定制规则行为，无需修改代码
+
+groups:
+  A:
+    name: "约束方法论"
+    ug949_ref: "Ch3, Ch5"
+  B:
+    name: "RTL 编码规范"
+    ug949_ref: "Ch3"
+  C:
+    name: "实现流程方法论"
+    ug949_ref: "Ch4, UG1292"
+  D:
+    name: "时序根因"
+    ug949_ref: "UG1292"
+  E:
+    name: "综合 Log 分析"
+    ug949_ref: "Ch3, UG901"
+  F:
+    name: "优化 Log 分析"
+    ug949_ref: "Ch4"
+  G:
+    name: "布局 Log 分析"
+    ug949_ref: "UG1292"
+  H:
+    name: "布线 Log 分析"
+    ug949_ref: "UG1292"
+  I:
+    name: "全流程汇总"
+    ug949_ref: "UG949, UG1292"
+
+# 合规评分权重
+scoring:
+  CRITICAL: -15
+  FAIL: -10
+  WARN: -3
+  INFO: 0
+
+# 规则特定阈值（Phase 3 可通过此文件调整）
+thresholds:
+  CONST-008:
+    false_path_ratio: 0.3   # false_path 占比超过 30% 触发
+  SYNTH-008:
+    dont_touch_count: 5     # DONT_TOUCH 超过 5 个触发
+  PLACE-001:
+    congestion_level: 3     # 拥塞等级 >= 3 触发
+  IMPL-005:
+    utilization_percent: 70 # 利用率 > 70% 触发
+  IMPL-006:
+    control_set_ratio: 0.075  # 控制集占比 > 7.5% 触发

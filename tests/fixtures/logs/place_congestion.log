@@ -1,0 +1,11 @@
+Starting Placement : Time (s): cpu = 00:05:12 ; elapsed = 00:05:18
+
+Running place_design
+INFO: [Place 30-487] Placement congestion detected in region X12Y5:W16xH16
+Congestion Level 4 in Region X12Y5:W16xH16
+Congestion Level 3 in Region X8Y20:W12xH12
+
+WNS = -0.250
+WNS = -0.180
+
+Time (s): cpu = 00:08:45 ; elapsed = 00:08:52

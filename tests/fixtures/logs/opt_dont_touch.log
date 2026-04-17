@@ -1,0 +1,9 @@
+Starting opt_design : Time (s): cpu = 00:03:10 ; elapsed = 00:03:15
+
+Running opt_design
+WARNING: [Opt 31-68] DONT_TOUCH property on module 'debug_core_inst' prevented optimization
+WARNING: [Opt 31-68] DONT_TOUCH property on module 'ila_inst' prevented optimization
+WARNING: [Opt 31-34] High fanout net 'reset_sync_rst' has 5234 loads
+INFO: [Opt 31-45] Control set optimization completed
+
+Time (s): cpu = 00:04:30 ; elapsed = 00:04:35
