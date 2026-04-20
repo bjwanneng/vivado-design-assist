@@ -5,6 +5,8 @@ AI 增强解读
 AI 只做解释，不做判断。
 """
 
+from typing import List
+
 from vivado_ai.models.issue import Issue, Severity
 from vivado_ai.core.llm_provider import create_llm, LLMConfig
 
@@ -73,3 +75,37 @@ class AIInterpreter:
             if issue.severity in (Severity.FAIL, Severity.CRITICAL):
                 results[issue.rule_id] = self.explain(issue)
         return results
+
+    def analyze_root_cause(self, issues: List[Issue]) -> str:
+        """跨 issue 根因分析 — 归纳所有 FAIL/CRITICAL 的共同根因"""
+        critical_issues = [
+            i for i in issues
+            if i.severity in (Severity.FAIL, Severity.CRITICAL)
+        ]
+        if not critical_issues:
+            return ""
+
+        issue_summary = "\n".join(
+            f"- [{i.severity.value}] {i.rule_id}: {i.message}"
+            + (f" (code: {i.message_code})" if i.message_code else "")
+            for i in critical_issues
+        )
+
+        user_message = (
+            f"The following {len(critical_issues)} methodology violations were found:\n\n"
+            f"{issue_summary}\n\n"
+            f"Please analyze the root cause in Chinese:\n"
+            f"1. What is the common root cause (if any)?\n"
+            f"2. What is the priority fix order?\n"
+            f"3. One-sentence executive summary.\n"
+            f"Keep it under 300 words."
+        )
+
+        try:
+            response = self.llm.chat(
+                system_prompt=SYSTEM_PROMPT,
+                user_message=user_message,
+            )
+            return response.text
+        except Exception as e:
+            return f"[AI root cause analysis unavailable: {e}]"

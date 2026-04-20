@@ -34,6 +34,12 @@ class Issue:
     # 定位信息
     location: str = ""         # 文件名:行号 或 实例路径
 
+    # Vivado 原始信息
+    message_code: str = ""     # Vivado 消息代码, e.g. "Synth 8-327"
+
+    # 外部链接
+    forum_url: str = ""        # Xilinx Forum 搜索链接
+
     # 参考文档
     ug949_ref: str = ""        # UG949 章节引用
     ug1292_ref: str = ""       # UG1292 引用 (可选)

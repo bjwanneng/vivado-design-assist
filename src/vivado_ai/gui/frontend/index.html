@@ -142,6 +142,29 @@ body {
   background: rgba(34,197,94,0.1);
   margin-bottom: 8px;
 }
+
+/* Root cause panel */
+.root-cause-panel {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 8px; padding: 10px 12px; margin-bottom: 12px;
+  border-left: 3px solid var(--accent);
+}
+.root-cause-panel h3 { font-size: 12px; color: var(--accent); margin-bottom: 6px; }
+.root-cause-panel p { font-size: 11px; color: var(--muted); line-height: 1.6; white-space: pre-wrap; }
+
+/* Forum link */
+.forum-link {
+  display: inline-block; margin-top: 4px; font-size: 10px;
+  color: var(--accent); text-decoration: none;
+}
+.forum-link:hover { text-decoration: underline; }
+
+/* AI explanation */
+.ai-section {
+  background: rgba(124,58,237,0.08); border: 1px solid rgba(124,58,237,0.2);
+  border-radius: 6px; padding: 8px; margin-top: 6px;
+  font-size: 11px; color: #c0b0e0; line-height: 1.5; white-space: pre-wrap;
+}
 </style>
 </head>
 <body>
@@ -177,6 +200,7 @@ body {
 
   <!-- State: results -->
   <div id="stateResults" style="display:none">
+    <div id="rootCausePanel" class="root-cause-panel" style="display:none"></div>
     <div class="tabs">
       <div class="tab active" data-filter="all">All</div>
       <div class="tab" data-filter="CRITICAL">CRITICAL</div>
@@ -239,6 +263,15 @@ function renderResults(data) {
   scoreEl.className = 'score ' + (data.score >= 80 ? 'pass' : 'fail');
   scoreEl.style.display = '';
 
+  // Root cause summary
+  const rcp = document.getElementById('rootCausePanel');
+  if (data.root_cause_summary) {
+    rcp.innerHTML = '<h3>Root Cause Analysis</h3><p>' + esc(data.root_cause_summary) + '</p>';
+    rcp.style.display = '';
+  } else {
+    rcp.style.display = 'none';
+  }
+
   window._issues = data.issues || [];
   renderIssues(window._issues);
   showState('results');
@@ -259,6 +292,14 @@ function renderIssues(issues) {
         + JSON.stringify(JSON.stringify(issue.fix_suggestion))
         + ')">Copy</button></div>'
       : '';
+    const forumHtml = issue.forum_url
+      ? '<a class="forum-link" href="' + esc(issue.forum_url) + '" target="_blank">'
+        + 'Search Forum' + (issue.message_code ? ' (' + esc(issue.message_code) + ')' : '')
+        + ' &rarr;</a>'
+      : '';
+    const aiHtml = issue.ai_explanation
+      ? '<div class="ai-section">' + esc(issue.ai_explanation) + '</div>'
+      : '';
     const refHtml = issue.ug949_ref
       ? '<p style="margin-top:4px;color:#a0a0d0;font-size:10px">UG949: ' + esc(issue.ug949_ref) + '</p>'
       : '';
@@ -270,7 +311,7 @@ function renderIssues(issues) {
       + '<div class="detail">'
       + '<p>' + esc(issue.message) + '</p>'
       + (issue.detail ? '<p style="margin-top:4px">' + esc(issue.detail) + '</p>' : '')
-      + fixHtml + refHtml
+      + fixHtml + forumHtml + aiHtml + refHtml
       + '</div></div>';
   }).join('');
 }

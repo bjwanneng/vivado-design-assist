@@ -31,6 +31,9 @@ class CheckReport:
     # 优先修复建议
     priority_actions: List[str] = field(default_factory=list)
 
+    # AI 跨 issue 根因分析
+    root_cause_summary: str = ""
+
     def to_markdown(self) -> str:
         """生成 Markdown 格式报告"""
         lines = [
@@ -45,6 +48,15 @@ class CheckReport:
         for sev, count in self.by_severity.items():
             lines.append(f"- {sev}: {count}")
 
+        if self.root_cause_summary:
+            lines.append("\n## Root Cause Analysis\n")
+            lines.append(self.root_cause_summary)
+
+        if self.priority_actions:
+            lines.append("\n## Priority Actions\n")
+            for action in self.priority_actions:
+                lines.append(f"- {action}")
+
         lines.append("\n## Issues\n")
         for issue in self.issues:
             if issue.severity == Severity.PASS:
@@ -58,10 +70,12 @@ class CheckReport:
                 lines.append(f"\n**Detail**: {issue.detail}")
             if issue.fix_suggestion:
                 lines.append(f"\n**Fix**: {issue.fix_suggestion}")
-            if issue.ug949_ref:
-                lines.append(f"\n**Ref**: UG949 {issue.ug949_ref}")
+            if issue.forum_url:
+                lines.append(f"\n**Forum**: {issue.forum_url}")
             if issue.ai_explanation:
                 lines.append(f"\n**AI Analysis**: {issue.ai_explanation}")
+            if issue.ug949_ref:
+                lines.append(f"\n**Ref**: UG949 {issue.ug949_ref}")
             lines.append("\n---\n")
 
         return "\n".join(lines)
@@ -73,6 +87,8 @@ class CheckReport:
             "score": self.score,
             "total_issues": self.total_issues,
             "by_severity": self.by_severity,
+            "root_cause_summary": self.root_cause_summary,
+            "priority_actions": self.priority_actions,
             "issues": [
                 {
                     "rule_id": i.rule_id,
@@ -82,7 +98,10 @@ class CheckReport:
                     "detail": i.detail,
                     "fix": i.fix_suggestion,
                     "location": i.location,
+                    "message_code": i.message_code,
+                    "forum_url": i.forum_url,
                     "ref": i.ug949_ref,
+                    "ug1292_ref": i.ug1292_ref,
                     "ai_explanation": i.ai_explanation,
                 }
                 for i in self.issues

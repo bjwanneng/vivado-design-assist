@@ -1,7 +1,7 @@
 # Vivado Methodology Checker (VMC) - 项目当前状态
 
 > 更新时间: 2026-04-17
-> 版本: v2.0 Phase 1-3 全部完成
+> 版本: v2.1 AI 增强完成
 
 ---
 
@@ -55,7 +55,16 @@ vivado-ai gui --uninstall               # 卸载 Vivado 集成
 - 3 个解析器 (report/log/xdc)
 - AI Interpreter (可选)
 - YAML 规则配置
-- 50 个单元测试全部通过
+- 65 个单元测试全部通过
+
+### AI 增强 ✅ (v2.1)
+
+| 功能 | 说明 |
+|------|------|
+| Forum 搜索链接 | 每个 issue 自动生成 Xilinx Forum 搜索 URL |
+| AI 跨 issue 根因分析 | LLM 归纳所有 FAIL/CRITICAL 的共同根因 |
+| AI 单 issue 解读 | 为每个违规生成中文解释和修复建议 |
+| `--no-ai` / `enable_ai=False` | 无 API key 时完全离线可用 |
 
 ---
 
@@ -114,3 +123,4 @@ configs/rules/ (YAML)
 - UG1292 决策树编排
 - 历史对比 + 趋势分析
 - 修复脚本自动生成 (TCL/XDC)
+- Xilinx Forum 知识库 (embedding 语义匹配)

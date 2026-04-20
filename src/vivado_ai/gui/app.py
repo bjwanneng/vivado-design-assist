@@ -182,6 +182,7 @@ class Backend:
                 "stage": stage,
                 "score": result.score,
                 "total_issues": len(result.issues),
+                "root_cause_summary": result.root_cause_summary,
                 "issues": [
                     {
                         "rule_id": i.rule_id,
@@ -191,7 +192,10 @@ class Backend:
                         "detail": i.detail,
                         "fix_suggestion": i.fix_suggestion,
                         "location": i.location,
+                        "message_code": i.message_code,
+                        "forum_url": i.forum_url,
                         "ug949_ref": i.ug949_ref,
+                        "ai_explanation": i.ai_explanation,
                     }
                     for i in result.issues
                 ],

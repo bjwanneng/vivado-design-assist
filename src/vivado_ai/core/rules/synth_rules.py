@@ -39,6 +39,7 @@ class RAMNotBlockRAM(Rule):
                         "4. Verify write-first/read-first behavior matches"
                     ),
                     location=msg.source,
+                    message_code=msg.code,
                 ))
 
         return RuleResult(rule_id=self.id, issues=issues)
@@ -75,6 +76,7 @@ class UnintendedLatch(Rule):
                         "Ensure all signal assignments in all branches."
                     ),
                     location=msg.source,
+                    message_code=msg.code,
                 ))
 
         return RuleResult(rule_id=self.id, issues=issues)
@@ -107,6 +109,7 @@ class MultiDrivenSignal(Rule):
                         "Check for accidental multiple assignments."
                     ),
                     location=msg.source,
+                    message_code=msg.code,
                 ))
 
         return RuleResult(rule_id=self.id, issues=issues)
@@ -137,6 +140,7 @@ class UnconnectedPorts(Rule):
                     fix_suggestion="Check module instantiation for missing connections.",
                     location=msg.source,
                     severity=Severity.WARN,
+                    message_code=msg.code,
                 ))
 
         return RuleResult(rule_id=self.id, issues=issues)
@@ -175,6 +179,7 @@ class NonDedicatedClockRoute(Rule):
                         "3. Ensure clock goes through MMCM/PLL/BUFG"
                     ),
                     location=msg.source,
+                    message_code=msg.code,
                 ))
 
         return RuleResult(rule_id=self.id, issues=issues)
@@ -208,6 +213,7 @@ class GatedClock(Rule):
                     ),
                     location=msg.source,
                     severity=Severity.WARN,
+                    message_code=msg.code,
                 ))
 
         return RuleResult(rule_id=self.id, issues=issues)

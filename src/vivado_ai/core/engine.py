@@ -4,6 +4,7 @@
 编排 解析器 → 规则引擎 → AI 解读 → 评分 的完整流程。
 """
 
+import urllib.parse
 from dataclasses import dataclass, field
 from enum import Enum
 from typing import List, Optional
@@ -53,6 +54,7 @@ class CheckResult:
     issues: List[Issue]
     score: int  # 0-100
     summary: dict
+    root_cause_summary: str = ""
 
 
 class MethodologyEngine:
@@ -73,6 +75,7 @@ class MethodologyEngine:
         self.report_parser = ReportParser()
         self.log_parser = LogParser()
         self.xdc_parser = XDCParser()
+        self._ai_interpreter = None  # lazy init
 
     def run(self) -> CheckResult:
         """执行完整检查流程"""
@@ -89,13 +92,22 @@ class MethodologyEngine:
             result = rule.check(findings)
             issues.extend(result.issues)
 
-        # Step 3: 评分
+        # Step 3: 附加 Forum 搜索链接
+        self._attach_forum_links(issues)
+
+        # Step 4: AI 增强解读 (可选)
+        root_cause_summary = ""
+        if self.config.enable_ai:
+            root_cause_summary = self._run_ai_enhancements(issues)
+
+        # Step 5: 评分
         score = self.scorer.score(issues)
 
         return CheckResult(
             issues=issues,
             score=score,
             summary=self._build_summary(issues, score),
+            root_cause_summary=root_cause_summary,
         )
 
     def _collect_findings(self) -> Findings:
@@ -132,3 +144,33 @@ class MethodologyEngine:
             "by_severity": by_severity,
             "score": score,
         }
+
+    def _attach_forum_links(self, issues: List[Issue]):
+        """为非 PASS 的 issue 生成 Xilinx Forum 搜索链接"""
+        for issue in issues:
+            if issue.severity == Severity.PASS:
+                continue
+            query = issue.message_code or issue.rule_name
+            if query:
+                issue.forum_url = (
+                    "https://support.xilinx.com/s/search?q="
+                    + urllib.parse.quote(query)
+                )
+
+    def _run_ai_enhancements(self, issues: List[Issue]) -> str:
+        """AI 增强解读：单 issue 解释 + 跨 issue 根因分析"""
+        try:
+            from vivado_ai.core.ai_interpreter import AIInterpreter
+            if self._ai_interpreter is None:
+                self._ai_interpreter = AIInterpreter()
+
+            # 单 issue 解释
+            explanations = self._ai_interpreter.explain_batch(issues)
+            for issue in issues:
+                if issue.rule_id in explanations:
+                    issue.ai_explanation = explanations[issue.rule_id]
+
+            # 跨 issue 根因分析
+            return self._ai_interpreter.analyze_root_cause(issues)
+        except Exception as e:
+            return f"[AI enhancement unavailable: {e}]"

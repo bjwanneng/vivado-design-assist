@@ -81,6 +81,7 @@ class PlacementFailed(Rule):
                         "3. Consider reducing design size or increasing part"
                     ),
                     severity=Severity.CRITICAL,
+                    message_code=msg.code,
                 ))
 
         return RuleResult(rule_id=self.id, issues=issues)

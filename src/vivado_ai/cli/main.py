@@ -132,6 +132,7 @@ def _build_report(result, config: CheckConfig) -> CheckReport:
         by_group=by_group,
         score=result.score,
         issues=issues,
+        root_cause_summary=result.root_cause_summary,
     )
 
 
@@ -143,6 +144,13 @@ def _print_report(report: CheckReport):
         title="Methodology Compliance Score",
     ))
     console.print(f"Mode: {report.mode} | Issues: {report.total_issues}")
+
+    if report.root_cause_summary:
+        console.print(Panel(
+            report.root_cause_summary,
+            title="Root Cause Analysis",
+            border_style="cyan",
+        ))
 
     if report.by_severity:
         for sev, count in report.by_severity.items():

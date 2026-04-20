@@ -60,6 +60,7 @@ class Rule(ABC):
         fix_suggestion: str = "",
         location: str = "",
         severity: Severity = None,
+        message_code: str = "",
     ) -> Issue:
         return Issue(
             rule_id=self.id,
@@ -69,6 +70,7 @@ class Rule(ABC):
             detail=detail,
             fix_suggestion=fix_suggestion,
             location=location,
+            message_code=message_code,
             ug949_ref=self.ug949_ref,
             ug1292_ref=self.ug1292_ref,
         )

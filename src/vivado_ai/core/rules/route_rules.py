@@ -36,6 +36,7 @@ class UnroutedNets(Rule):
                         "3. Review congestion reports"
                     ),
                     severity=Severity.CRITICAL,
+                    message_code=msg.code,
                 ))
 
         return RuleResult(rule_id=self.id, issues=issues)
@@ -67,6 +68,7 @@ class RouterCongestion(Rule):
                         "3. Add Pblock constraints\n"
                         "4. Consider restructuring RTL to reduce fanout"
                     ),
+                    message_code=msg.code,
                 ))
 
         # 检查拥塞报告
