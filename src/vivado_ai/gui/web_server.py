@@ -11,6 +11,9 @@ import queue
 import threading
 import webbrowser
 from pathlib import Path
+from typing import Optional
+
+from vivado_ai.gui.tui import TUI
 
 FRONTEND_DIR = Path(__file__).parent / "frontend"
 

@@ -67,8 +67,8 @@ def create_parser() -> argparse.ArgumentParser:
     # ── gui ──
     gui_p = subparsers.add_parser("gui", help="Launch GUI (auto-detect Vivado)")
     gui_p.add_argument("--uninstall", action="store_true", help="Remove VMC integration from Vivado init.tcl")
-    gui_p.add_argument("--mode", choices=["native", "web", "auto"], default="auto",
-                       help="GUI mode: native=pywebview, web=browser, auto=try native first (default: auto)")
+    gui_p.add_argument("--mode", choices=["native", "web", "tui", "auto"], default="auto",
+                       help="GUI mode: native=pywebview, web=browser, tui=terminal, auto=try native first (default: auto)")
 
     return parser
 
@@ -230,11 +230,17 @@ def _cmd_gui(args):
     mode = args.mode
 
     if mode == "auto":
-        try:
-            import webview  # noqa: F401
-            mode = "native"
-        except ImportError:
-            mode = "web"
+        # 检测是否有显示终端（有 TTY）
+        import sys, os
+        has_tty = sys.stdout.isatty() and os.isatty(sys.stdout.fileno())
+        if has_tty:
+            mode = "tui"
+        else:
+            try:
+                import webview  # noqa: F401
+                mode = "native"
+            except ImportError:
+                mode = "web"
 
     if mode == "native":
         try:
@@ -245,6 +251,22 @@ def _cmd_gui(args):
             console.print(f"[yellow]pywebview not available:[/yellow] {e}")
             console.print("Falling back to web server mode...")
             mode = "web"
+
+    if mode == "tui":
+        try:
+            from vivado_ai.gui.app import Backend
+            from vivado_ai.gui.tui import TUI
+        except ImportError as e:
+            console.print(f"[red]GUI dependencies not installed:[/red] {e}")
+            console.print("Install with: pip install vivado-ai[gui]")
+            sys.exit(1)
+
+        backend = Backend()
+        backend.initialize()
+        tui = TUI(backend)
+        console.print("[bright_cyan]VMC TUI 启动... 按 Ctrl+C 退出[/bright_cyan]")
+        tui.run()
+        return
 
     # web mode
     try:
