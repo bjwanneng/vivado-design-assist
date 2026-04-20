@@ -1,14 +1,14 @@
 # Vivado Methodology Checker (VMC) - 项目当前状态
 
 > 更新时间: 2026-04-20
-> 版本: v2.2 Web GUI 模式
+> 版本: v2.2 多模式 GUI (Web + TUI + Native)
 
 ---
 
 ## 项目简介
 
 基于 Xilinx UltraFast Design Methodology (UG949) 和 Timing Closure Quick Reference (UG1292)，
-构建一个 **Vivado 设计方法论合规检查工具**，支持 CLI 和 GUI 浮窗两种使用方式。
+构建一个 **Vivado 设计方法论合规检查工具**，支持 CLI、Web 浏览器、终端 TUI、GUI 浮窗四种使用方式。
 
 ---
 
@@ -36,12 +36,13 @@ vivado-ai check --reports-dir <dir>     # 报告解析
 vivado-ai analyze --log-dir <dir>       # Log 分析
 vivado-ai rules                         # 列出 49 条规则
 vivado-ai gui                            # 启动 GUI (auto 模式)
-vivado-ai gui --mode web                # 强制浏览器模式
-vivado-ai gui --mode native             # 强制 pywebview 浮窗
+vivado-ai gui --mode web                # 浏览器模式
+vivado-ai gui --mode tui                # 终端 TUI 模式
+vivado-ai gui --mode native             # pywebview 浮窗模式
 vivado-ai gui --uninstall               # 卸载 Vivado 集成
 ```
 
-### GUI 浮窗 ✅
+### GUI 组件 ✅
 
 | 组件 | 文件 | 说明 |
 |------|------|------|
@@ -50,6 +51,7 @@ vivado-ai gui --uninstall               # 卸载 Vivado 集成
 | Hook 生成器 | gui/hooks.py | post_synth/place/route.tcl |
 | 后端 | gui/app.py | VivadoProbe + BuildWatcher + 状态机 |
 | Web 服务器 | gui/web_server.py | 纯 stdlib HTTP + SSE (零依赖) |
+| TUI 终端界面 | gui/tui.py | Rich Live Display 实时面板 (零新依赖) |
 | 前端 | gui/frontend/index.html | 暗色主题 UI (pywebview/web 双模式) |
 
 ### 基础设施 ✅
@@ -69,14 +71,22 @@ vivado-ai gui --uninstall               # 卸载 Vivado 集成
 | AI 单 issue 解读 | 为每个违规生成中文解释和修复建议 |
 | `--no-ai` / `enable_ai=False` | 无 API key 时完全离线可用 |
 
-### Web GUI 模式 ✅ (v2.2)
+### 多模式 GUI ✅ (v2.2)
 
-| 功能 | 说明 |
-|------|------|
-| 纯 stdlib HTTP 服务器 | 零外部依赖，适用于无 Qt/GTK 的 Linux 服务器 |
-| SSE 状态推送 | 实时推送 Vivado 连接/分析状态 |
-| 自动模式检测 | `auto` 模式先试 pywebview，失败自动切 web server |
-| 自动选端口 + 打开浏览器 | 端口冲突自动递增，启动后自动打开浏览器 |
+| 模式 | 适用场景 | 依赖 |
+|------|---------|------|
+| `native` (pywebview) | Windows/macOS 桌面 | pywebview, Qt/GTK |
+| `web` (浏览器) | Linux 服务器 (NoMachine/远程桌面) | 零额外依赖 (stdlib) |
+| `tui` (终端) | SSH 远程 / 无桌面环境 | 零额外依赖 (Rich) |
+| `auto` (自动) | 自动检测环境选择最佳模式 | — |
+
+**自动检测逻辑**：
+- 有 TTY 终端 → TUI 模式
+- 有 pywebview → Native 模式
+- 其他 → Web 模式
+
+**Web 模式特性**：SSE 实时状态推送、自动选端口、自动打开浏览器
+**TUI 模式特性**：Rich Live Display 实时刷新、按 `A` 触发分析、Ctrl+C 退出
 
 ---
 
@@ -90,15 +100,20 @@ vivado-ai check --reports-dir build/reports/ --output report.md
 vivado-ai analyze --log-dir build/logs/
 ```
 
-### GUI 浮窗模式
+### GUI 模式
 
 ```bash
-# 首次启动（自动安装 init.tcl）
+# 自动检测最佳模式
 vivado-ai gui
 
-# 重启 Vivado 后自动生效：
+# 指定模式
+vivado-ai gui --mode web     # 浏览器 (Linux 服务器)
+vivado-ai gui --mode tui     # 终端 (SSH 环境)
+vivado-ai gui --mode native  # 浮窗 (Windows/macOS)
+
+# 首次启动自动安装 init.tcl，重启 Vivado 后自动生效：
 # - Vivado 启动时自动加载 Tcl Server (port 19876)
-# - VMC 浮窗自动探测 Vivado 进程
+# - 自动探测 Vivado 进程
 # - 自动注入 Hook 脚本
 # - 每个编译阶段完成后自动生成报告并分析
 
@@ -120,10 +135,12 @@ src/vivado_ai/
 ├── cli/main.py
 ├── gui/
 │   ├── app.py, installer.py, tcl_client.py, hooks.py
-│   └── frontend/index.html
+│   ├── web_server.py          # HTTP + SSE 服务器
+│   ├── tui.py                 # Rich 终端界面
+│   └── frontend/index.html    # 暗色主题 UI
 └── utils/config.py
 
-tests/ (50 tests, all passing)
+tests/ (77 tests, all passing)
 configs/rules/ (YAML)
 ```
 
