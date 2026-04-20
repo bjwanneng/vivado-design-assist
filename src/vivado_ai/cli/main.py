@@ -69,7 +69,6 @@ def create_parser() -> argparse.ArgumentParser:
     gui_p.add_argument("--uninstall", action="store_true", help="Remove VMC integration from Vivado init.tcl")
     gui_p.add_argument("--mode", choices=["native", "web", "auto"], default="auto",
                        help="GUI mode: native=pywebview, web=browser, auto=try native first (default: auto)")
-    gui_p.add_argument("--port", type=int, default=19877, help="Web server port (default: 19877)")
 
     return parser
 
@@ -258,7 +257,7 @@ def _cmd_gui(args):
 
     backend = Backend()
     backend.initialize()
-    start_web_server(backend, port=args.port)
+    start_web_server(backend)
 
 
 if __name__ == "__main__":

@@ -9,6 +9,7 @@ import http.server
 import json
 import queue
 import threading
+import webbrowser
 from pathlib import Path
 
 FRONTEND_DIR = Path(__file__).parent / "frontend"
@@ -155,7 +156,7 @@ class VMCRequestHandler(http.server.BaseHTTPRequestHandler):
 
 
 def start_web_server(backend, port: int = 19877):
-    """启动 Web GUI 服务器"""
+    """启动 Web GUI 服务器，自动选择可用端口并打开浏览器"""
 
     sse_clients: list[queue.Queue] = []
 
@@ -194,6 +195,12 @@ def start_web_server(backend, port: int = 19877):
 
     print(f"\n  VMC Web GUI: http://localhost:{actual_port}\n")
     print("  Press Ctrl+C to stop.\n")
+
+    # 自动打开浏览器
+    threading.Thread(
+        target=lambda: webbrowser.open(f"http://localhost:{actual_port}"),
+        daemon=True,
+    ).start()
 
     try:
         server.serve_forever()
