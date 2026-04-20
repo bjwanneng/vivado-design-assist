@@ -71,6 +71,7 @@ class Backend:
         self.tcl_client: Optional[VivadoTclClient] = None
         self.hooks: Optional[HookScriptGenerator] = None
 
+        self._lock = threading.Lock()
         self._state = "init"
         self._project_info: dict = {}
         self._analysis_result: Optional[dict] = None
@@ -83,19 +84,23 @@ class Backend:
 
     @property
     def state(self) -> str:
-        return self._state
+        with self._lock:
+            return self._state
 
     @property
     def project_info(self) -> dict:
-        return self._project_info
+        with self._lock:
+            return self._project_info
 
     @property
     def analysis_result(self) -> Optional[dict]:
-        return self._analysis_result
+        with self._lock:
+            return self._analysis_result
 
     def add_state_callback(self, cb: Callable[[str], None]):
         """注册状态变化回调（供 web server SSE 使用）"""
-        self._state_callbacks.append(cb)
+        with self._lock:
+            self._state_callbacks.append(cb)
 
     # ── 初始化 ──
 
@@ -119,22 +124,32 @@ class Backend:
         thread.start()
 
     def _try_connect(self):
-        if self.tcl_client and self.tcl_client.is_connected:
-            return
+        with self._lock:
+            if self.tcl_client and self.tcl_client.is_connected:
+                return
 
         proc = self.probe.scan()
         if not proc:
-            if self._state == "ready":
+            if self.state == "ready":
                 self._set_state("waiting")
             return
 
         client = VivadoTclClient()
         if client.connect():
-            self.tcl_client = client
+            with self._lock:
+                # 清理旧连接
+                if self.tcl_client:
+                    self.tcl_client.disconnect()
+                if self._observer:
+                    self._observer.stop()
+                    self._observer = None
+
+                self.tcl_client = client
             self._on_connected()
 
     def _on_connected(self):
-        self._project_info = self.tcl_client.get_project_info()
+        with self._lock:
+            self._project_info = self.tcl_client.get_project_info()
 
         hooks_dir = self._get_hooks_dir()
         self.hooks = HookScriptGenerator(hooks_dir)
@@ -145,8 +160,10 @@ class Backend:
         self._set_state("ready")
 
     def _get_hooks_dir(self) -> str:
-        if self._project_info.get("runs_dir"):
-            return str(Path(self._project_info["runs_dir"]) / "vmc_hooks")
+        with self._lock:
+            pi = self._project_info
+        if pi.get("runs_dir"):
+            return str(Path(pi["runs_dir"]) / "vmc_hooks")
         return str(Path.home() / ".vmc" / "hooks")
 
     # ── 文件监控 ──
@@ -156,9 +173,10 @@ class Backend:
             return
 
         handler = BuildWatchdogHandler(self._on_stage_done)
-        self._observer = Observer()
-        self._observer.schedule(handler, str(self.hooks.reports_dir), recursive=False)
-        self._observer.start()
+        with self._lock:
+            self._observer = Observer()
+            self._observer.schedule(handler, str(self.hooks.reports_dir), recursive=False)
+            self._observer.start()
 
     def _on_stage_done(self, stage: str):
         logger.info("Stage %s completed", stage)
@@ -183,7 +201,7 @@ class Backend:
             engine = MethodologyEngine(config)
             result = engine.run()
 
-            self._analysis_result = {
+            analysis_result = {
                 "stage": stage,
                 "score": result.score,
                 "total_issues": len(result.issues),
@@ -206,26 +224,34 @@ class Backend:
                 ],
             }
 
+            with self._lock:
+                self._analysis_result = analysis_result
+
             self._set_state("results")
 
         except Exception as e:
             logger.error("Analysis failed: %s", e, exc_info=True)
-            self._analysis_result = {"error": str(e)}
+            with self._lock:
+                self._analysis_result = {"error": str(e)}
             self._set_state("results")
 
     # ── 手动触发 ──
 
     def run_now(self) -> dict:
         """前端按钮调用"""
-        if not self.tcl_client or not self.tcl_client.is_connected:
-            return {"error": "Not connected to Vivado"}
+        with self._lock:
+            if not self.tcl_client or not self.tcl_client.is_connected:
+                return {"error": "Not connected to Vivado"}
 
         self._set_state("analyzing")
         reports_dir = str(self.hooks.reports_dir) if self.hooks else ""
 
         success = self.tcl_client.run_reports_now(reports_dir)
         if success:
-            self._run_analysis("manual")
+            thread = threading.Thread(
+                target=self._run_analysis, args=("manual",), daemon=True,
+            )
+            thread.start()
 
         return {"success": success}
 
@@ -234,16 +260,22 @@ class Backend:
     def uninstall(self) -> dict:
         self.installer.uninstall()
         self._polling = False
-        if self._observer:
-            self._observer.stop()
-        if self.tcl_client:
-            self.tcl_client.disconnect()
+        with self._lock:
+            if self._observer:
+                self._observer.stop()
+                self._observer = None
+            if self.tcl_client:
+                self.tcl_client.disconnect()
+                self.tcl_client = None
         return {"uninstalled": True}
 
     # ── 状态管理 ──
 
     def _set_state(self, new_state: str):
-        self._state = new_state
+        with self._lock:
+            self._state = new_state
+            callbacks = list(self._state_callbacks)
+
         if self._window:
             try:
                 self._window.evaluate_js(
@@ -252,7 +284,7 @@ class Backend:
                 )
             except Exception:
                 pass
-        for cb in self._state_callbacks:
+        for cb in callbacks:
             try:
                 cb(new_state)
             except Exception:

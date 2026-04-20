@@ -1,7 +1,7 @@
 # Vivado Methodology Checker (VMC) - 项目当前状态
 
 > 更新时间: 2026-04-20
-> 版本: v2.2 多模式 GUI (Web + TUI + Native)
+> 版本: v2.3 多模式 GUI (Web + TUI + Native) — 22 项代码质量修复
 
 ---
 
@@ -53,6 +53,16 @@ vivado-ai gui --uninstall               # 卸载 Vivado 集成
 | Web 服务器 | gui/web_server.py | 纯 stdlib HTTP + SSE (零依赖) |
 | TUI 终端界面 | gui/tui.py | Rich Live Display 实时面板 (零新依赖) |
 | 前端 | gui/frontend/index.html | 暗色主题 UI (pywebview/web 双模式) |
+
+### 代码质量修复 ✅ (v2.3)
+
+22 项代码审查修复，全部通过 77 个单元测试：
+
+| 类别 | 修复项 |
+|------|--------|
+| 高优先级 | #1 HTTP→ThreadingHTTPServer, #2 Tcl响应协议, #3 时长HH:MM:SS, #4 AI解释per-issue, #5 XDC多行续行, #6 TUI Layout |
+| 中优先级 | #7 Backend线程安全Lock, #8 run_now异步分析, #9 重连资源清理, #10 SSE clients线程安全, #11 keyboard可选依赖, #12 Tcl路径引用, #13 Hook路径转义 |
+| 低优先级 | #14 输入校验, #15 total_rules填充, #16 JSON/Markdown PASS一致性, #17 重复规则ID警告, #18 LLM重试仅限瞬态异常, #19 报告文件错误处理, #20 opt阶段检测, #21 XSS防护 |
 
 ### 基础设施 ✅
 

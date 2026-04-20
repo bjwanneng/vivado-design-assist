@@ -2,6 +2,7 @@
 XDC 约束文件解析器
 
 提取 XDC 文件中的约束命令，用于 Lint 模式的静态检查。
+支持反斜杠续行和花括号包裹的多行命令。
 """
 
 import re
@@ -43,13 +44,25 @@ class XDCParser:
         "set_bus_skew",
     ]
 
-    def parse(self, file_path: Path) -> XDCData:
-        """解析 XDC 文件"""
-        file_path = Path(file_path)
-        content = file_path.read_text(encoding="utf-8", errors="ignore")
-        commands = []
+    def _join_continuation_lines(self, content: str) -> list[tuple[int, str]]:
+        """Join backslash-continuation lines, preserving original line numbers."""
+        result = []
+        lines = content.splitlines()
+        i = 0
+        while i < len(lines):
+            line = lines[i]
+            start_line = i + 1  # 1-based
+            while line.rstrip().endswith('\\') and i + 1 < len(lines):
+                line = line.rstrip()[:-1] + ' ' + lines[i + 1].strip()
+                i += 1
+            result.append((start_line, line))
+            i += 1
+        return result
 
-        for line_no, line in enumerate(content.splitlines(), 1):
+    def _parse_commands(self, joined_lines: list[tuple[int, str]]) -> list[XDCCommand]:
+        """从预处理后的行中提取命令"""
+        commands = []
+        for line_no, line in joined_lines:
             stripped = line.strip()
             if not stripped or stripped.startswith("#"):
                 continue
@@ -60,10 +73,17 @@ class XDCParser:
                         type=cmd_type,
                         args=self._parse_args(stripped),
                         line=line_no,
-                        file_path=str(file_path),
                         raw=stripped,
                     ))
                     break
+        return commands
+
+    def parse(self, file_path: Path) -> XDCData:
+        """解析 XDC 文件"""
+        file_path = Path(file_path)
+        content = file_path.read_text(encoding="utf-8", errors="ignore")
+        joined_lines = self._join_continuation_lines(content)
+        commands = self._parse_commands(joined_lines)
 
         return XDCData(
             commands=commands,
@@ -72,20 +92,8 @@ class XDCParser:
 
     def parse_string(self, content: str) -> XDCData:
         """解析 XDC 字符串"""
-        commands = []
-        for line_no, line in enumerate(content.splitlines(), 1):
-            stripped = line.strip()
-            if not stripped or stripped.startswith("#"):
-                continue
-            for cmd_type in self.COMMAND_TYPES:
-                if stripped.startswith(cmd_type):
-                    commands.append(XDCCommand(
-                        type=cmd_type,
-                        args=self._parse_args(stripped),
-                        line=line_no,
-                        raw=stripped,
-                    ))
-                    break
+        joined_lines = self._join_continuation_lines(content)
+        commands = self._parse_commands(joined_lines)
         return XDCData(commands=commands)
 
     def _parse_args(self, line: str) -> dict:

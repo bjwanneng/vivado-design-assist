@@ -8,12 +8,11 @@ VMC Web Server — 纯 stdlib HTTP + SSE 服务器
 import http.server
 import json
 import queue
+import socketserver
 import threading
 import webbrowser
 from pathlib import Path
 from typing import Optional
-
-from vivado_ai.gui.tui import TUI
 
 FRONTEND_DIR = Path(__file__).parent / "frontend"
 
@@ -65,8 +64,8 @@ class VMCRequestHandler(http.server.BaseHTTPRequestHandler):
     def _serve_static(self, path: str):
         """提供 frontend 目录下的静态文件"""
         rel = path.lstrip("/")
-        file_path = FRONTEND_DIR / rel
-        if file_path.is_file() and FRONTEND_DIR in file_path.resolve().parents:
+        file_path = (FRONTEND_DIR / rel).resolve()
+        if file_path.is_file() and file_path.is_relative_to(FRONTEND_DIR.resolve()):
             data = file_path.read_bytes()
             ct = self._guess_content_type(rel)
             self.send_response(200)
@@ -118,15 +117,17 @@ class VMCRequestHandler(http.server.BaseHTTPRequestHandler):
             return
 
         q = queue.Queue()
-        self.sse_clients.append(q)
+        with self._sse_lock:
+            self.sse_clients.append(q)
 
         # 立即发送当前状态
         try:
             initial = json.dumps({"state": self.backend.state})
             self._sse_write(initial)
         except (BrokenPipeError, ConnectionResetError, OSError):
-            if q in self.sse_clients:
-                self.sse_clients.remove(q)
+            with self._sse_lock:
+                if q in self.sse_clients:
+                    self.sse_clients.remove(q)
             return
 
         try:
@@ -140,8 +141,9 @@ class VMCRequestHandler(http.server.BaseHTTPRequestHandler):
         except (BrokenPipeError, ConnectionResetError, OSError):
             pass
         finally:
-            if q in self.sse_clients:
-                self.sse_clients.remove(q)
+            with self._sse_lock:
+                if q in self.sse_clients:
+                    self.sse_clients.remove(q)
 
     def _sse_write(self, payload: str):
         self.wfile.write(f"data: {payload}\n\n".encode())
@@ -162,31 +164,34 @@ def start_web_server(backend, port: int = 19877):
     """启动 Web GUI 服务器，自动选择可用端口并打开浏览器"""
 
     sse_clients: list[queue.Queue] = []
+    sse_lock = threading.Lock()
 
     # 注册状态回调 → 广播给所有 SSE 客户端
     def on_state_change(new_state: str):
         payload = json.dumps({"state": new_state})
-        dead = []
-        for i, q in enumerate(sse_clients):
-            try:
-                q.put_nowait(payload)
-            except Exception:
-                dead.append(i)
-        for i in reversed(dead):
-            sse_clients.pop(i)
+        with sse_lock:
+            dead = []
+            for i, q in enumerate(sse_clients):
+                try:
+                    q.put_nowait(payload)
+                except Exception:
+                    dead.append(i)
+            for i in reversed(dead):
+                sse_clients.pop(i)
 
     backend.add_state_callback(on_state_change)
 
     # 注入共享状态
     VMCRequestHandler.backend = backend
     VMCRequestHandler.sse_clients = sse_clients
+    VMCRequestHandler._sse_lock = sse_lock
 
     # 端口冲突自动递增
     server = None
     actual_port = port
     for attempt in range(10):
         try:
-            server = http.server.HTTPServer(
+            server = http.server.ThreadingHTTPServer(
                 ("0.0.0.0", actual_port), VMCRequestHandler,
             )
             break

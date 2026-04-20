@@ -4,9 +4,12 @@
 管理所有可用规则，支持按模式和规则组过滤。
 """
 
+import logging
 from typing import List, Dict, Type
 
 from vivado_ai.core.rules.base import Rule
+
+logger = logging.getLogger(__name__)
 
 
 class RuleRegistry:
@@ -17,6 +20,13 @@ class RuleRegistry:
     @classmethod
     def register(cls, rule_class: Type[Rule]) -> Type[Rule]:
         """注册规则（用作装饰器）"""
+        if rule_class.id in cls._rules:
+            logger.warning(
+                "Duplicate rule_id '%s': overwriting %s with %s",
+                rule_class.id,
+                cls._rules[rule_class.id].__name__,
+                rule_class.__name__,
+            )
         cls._rules[rule_class.id] = rule_class
         return rule_class
 

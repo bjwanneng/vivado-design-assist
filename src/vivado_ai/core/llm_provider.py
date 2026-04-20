@@ -219,7 +219,7 @@ class LLMProvider(ABC):
         for attempt in range(self.config.retry_count):
             try:
                 return func(*args, **kwargs)
-            except Exception as e:
+            except (LLMRateLimitError, LLMTimeoutError, ConnectionError, TimeoutError, OSError) as e:
                 if attempt < self.config.retry_count - 1:
                     delay = self.config.retry_delay * (2 ** attempt)
                     self._log_warning(f"Attempt {attempt + 1} failed: {e}. Retrying in {delay}s...")

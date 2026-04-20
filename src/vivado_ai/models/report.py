@@ -82,6 +82,7 @@ class CheckReport:
 
     def to_json(self) -> str:
         """生成 JSON 格式"""
+        non_pass = [i for i in self.issues if i.severity != Severity.PASS]
         data = {
             "mode": self.mode,
             "score": self.score,
@@ -104,7 +105,7 @@ class CheckReport:
                     "ug1292_ref": i.ug1292_ref,
                     "ai_explanation": i.ai_explanation,
                 }
-                for i in self.issues
+                for i in non_pass
             ],
         }
         return json.dumps(data, indent=2, ensure_ascii=False)

@@ -62,7 +62,7 @@ class VivadoTclClient:
                 self._socket = None
                 raise ConnectionError("Connection lost")
             response += chunk
-            if b"\n" in chunk:
+            if b"\n" in response:
                 break
 
         line = response.decode("utf-8", errors="ignore").strip()
@@ -110,11 +110,12 @@ class VivadoTclClient:
 
     def run_reports_now(self, output_dir: str) -> bool:
         try:
+            safe_dir = output_dir.replace("\\", "/").replace('"', '\\"')
             reports = [
-                ("report_timing_summary", f"-max_paths 10 -file {output_dir}/vm_timing_summary.rpt"),
-                ("report_methodology", f"-file {output_dir}/vm_methodology.rpt"),
-                ("report_clock_interaction", f"-file {output_dir}/vm_clock_interaction.rpt"),
-                ("report_utilization", f"-file {output_dir}/vm_utilization.rpt"),
+                ("report_timing_summary", f"-max_paths 10 -file \"{safe_dir}/vm_timing_summary.rpt\""),
+                ("report_methodology", f"-file \"{safe_dir}/vm_methodology.rpt\""),
+                ("report_clock_interaction", f"-file \"{safe_dir}/vm_clock_interaction.rpt\""),
+                ("report_utilization", f"-file \"{safe_dir}/vm_utilization.rpt\""),
             ]
 
             for cmd_name, args in reports:

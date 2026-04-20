@@ -93,7 +93,7 @@ def main():
     engine = MethodologyEngine(config)
     result = engine.run()
 
-    report = _build_report(result, config)
+    report = _build_report(result, config, engine)
     _print_report(report)
 
     if args.output:
@@ -117,7 +117,7 @@ def _build_config(args) -> CheckConfig:
     )
 
 
-def _build_report(result, config: CheckConfig) -> CheckReport:
+def _build_report(result, config: CheckConfig, engine=None) -> CheckReport:
     issues = result.issues
     by_severity = {}
     by_group = {}
@@ -126,9 +126,16 @@ def _build_report(result, config: CheckConfig) -> CheckReport:
         group = issue.rule_id.split("-")[0]
         by_group.setdefault(group, []).append(issue)
 
+    total_rules = 0
+    if engine:
+        total_rules = len(engine.registry.get_rules(
+            mode=config.mode.value,
+            groups=config.rule_groups,
+        ))
+
     return CheckReport(
         mode=config.mode.value,
-        total_rules=0,
+        total_rules=total_rules,
         total_issues=len(issues),
         by_severity=by_severity,
         by_group=by_group,

@@ -93,6 +93,8 @@ class LogParser:
 
         if "synth" in name_lower:
             findings.synth_log = self._parse_stage(content, "synthesis")
+        elif "opt" in name_lower and "place" not in name_lower:
+            findings.opt_log = self._parse_stage(content, "opt")
         elif "place" in name_lower:
             findings.place_log = self._parse_stage(content, "place")
         elif "route" in name_lower:
@@ -202,7 +204,12 @@ class LogParser:
             content, re.IGNORECASE,
         )
         if time_pattern:
-            minutes = int(time_pattern.group(1))
-            seconds = int(time_pattern.group(2))
-            return minutes * 60 + seconds
+            val1 = int(time_pattern.group(1))
+            val2 = int(time_pattern.group(2))
+            if time_pattern.group(3) is not None:
+                # HH:MM:SS format
+                return val1 * 3600 + val2 * 60 + int(time_pattern.group(3))
+            else:
+                # MM:SS format
+                return val1 * 60 + val2
         return None

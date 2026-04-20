@@ -68,12 +68,12 @@ class AIInterpreter:
         except Exception as e:
             return f"[AI explanation unavailable: {e}]"
 
-    def explain_batch(self, issues: list[Issue]) -> dict[str, str]:
+    def explain_batch(self, issues: list[Issue]) -> dict[int, str]:
         """批量生成解读（只对 FAIL/CRITICAL 级别）"""
         results = {}
-        for issue in issues:
+        for idx, issue in enumerate(issues):
             if issue.severity in (Severity.FAIL, Severity.CRITICAL):
-                results[issue.rule_id] = self.explain(issue)
+                results[idx] = self.explain(issue)
         return results
 
     def analyze_root_cause(self, issues: List[Issue]) -> str:

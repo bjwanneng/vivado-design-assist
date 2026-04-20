@@ -79,6 +79,9 @@ class MethodologyEngine:
 
     def run(self) -> CheckResult:
         """执行完整检查流程"""
+        # Step 0: 输入验证
+        self._validate_config()
+
         # Step 1: 收集数据
         findings = self._collect_findings()
 
@@ -109,6 +112,16 @@ class MethodologyEngine:
             summary=self._build_summary(issues, score),
             root_cause_summary=root_cause_summary,
         )
+
+    def _validate_config(self):
+        """验证配置中的必填输入"""
+        mode = self.config.mode
+        if mode == CheckMode.LINT and not self.config.xdc_files:
+            raise ValueError("Lint mode requires at least one --xdc file")
+        if mode == CheckMode.CHECK and not self.config.reports_dir:
+            raise ValueError("Check mode requires --reports-dir")
+        if mode == CheckMode.ANALYZE and not self.config.log_dir:
+            raise ValueError("Analyze mode requires --log-dir")
 
     def _collect_findings(self) -> Findings:
         """根据模式收集数据"""
@@ -166,9 +179,9 @@ class MethodologyEngine:
 
             # 单 issue 解释
             explanations = self._ai_interpreter.explain_batch(issues)
-            for issue in issues:
-                if issue.rule_id in explanations:
-                    issue.ai_explanation = explanations[issue.rule_id]
+            for idx, issue in enumerate(issues):
+                if idx in explanations:
+                    issue.ai_explanation = explanations[idx]
 
             # 跨 issue 根因分析
             return self._ai_interpreter.analyze_root_cause(issues)

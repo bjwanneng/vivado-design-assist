@@ -5,18 +5,17 @@ VMC TUI — 终端交互式界面
 零新依赖（Rich 已有）。
 """
 
-import json
 import time
 import threading
 from typing import Optional
 
-from rich import console
+from rich.console import Console
 from rich.live import Live
-from rich.layout import Layout
 from rich.panel import Panel
 from rich.text import Text
 from rich.table import Table
 from rich.rule import Rule
+from rich.console import Group
 
 
 class TUI:
@@ -27,28 +26,34 @@ class TUI:
         self.refresh_interval = refresh_interval
         self._running = True
         self._lock = threading.Lock()
-        self._console = console.Console()
+        self._console = Console()
 
     def run(self):
         """启动 TUI 主循环"""
+        backend = self.backend
         backend.add_state_callback(self._on_state_change)
 
-        # 注册键盘监听
-        import keyboard
-        def listen_keys():
-            while self._running:
-                if keyboard.is_pressed("a") and backend.state == "ready":
-                    backend.run_now()
-                time.sleep(0.1)
-        threading.Thread(target=listen_keys, daemon=True).start()
+        # 注册键盘监听（可选依赖）
+        try:
+            import keyboard
+
+            def listen_keys():
+                while self._running:
+                    if keyboard.is_pressed("a") and backend.state == "ready":
+                        backend.run_now()
+                    time.sleep(0.1)
+
+            threading.Thread(target=listen_keys, daemon=True).start()
+        except ImportError:
+            pass  # keyboard 模块不可用时跳过快捷键
 
         # 创建 Live Display
-        with Live(self._build_layout(), refresh_per_second=2) as live:
+        with Live(self._build_display(), refresh_per_second=2) as live:
             while self._running:
-                live.update(self._build_layout())
+                live.update(self._build_display())
                 time.sleep(self.refresh_interval)
 
-    def _build_layout(self) -> Layout:
+    def _build_display(self):
         """构建当前显示布局"""
         state = self.backend.state
         project = self.backend.project_info or {}
@@ -98,15 +103,13 @@ class TUI:
                     border_style=score_color,
                 )
 
-        return Layout(state_panel, project_panel, result_panel)
+        return Group(state_panel, project_panel, result_panel)
 
     def _on_state_change(self, new_state: str):
         """状态变化回调"""
         with self._lock:
             if new_state == "results":
                 self._show_results()
-            else:
-                self._last_state = new_state
 
     def _show_results(self):
         """显示分析结果详情"""

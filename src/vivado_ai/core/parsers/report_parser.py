@@ -6,6 +6,7 @@ Vivado 报告文件解析器
       utilization, failfast
 """
 
+import logging
 import re
 from pathlib import Path
 from typing import Optional
@@ -14,6 +15,8 @@ from vivado_ai.models.finding import (
     Findings, TimingPath, TimingSummary,
     MethodologyCheck, ClockInteraction, ClockNetwork,
 )
+
+logger = logging.getLogger(__name__)
 
 
 class ReportParser:
@@ -26,7 +29,11 @@ class ReportParser:
         rpt_files = list(reports_dir.glob("**/*.rpt"))
 
         for rpt_file in rpt_files:
-            content = rpt_file.read_text(encoding="utf-8", errors="ignore")
+            try:
+                content = rpt_file.read_text(encoding="utf-8", errors="ignore")
+            except (OSError, PermissionError) as e:
+                logger.warning("Cannot read report file %s: %s", rpt_file, e)
+                continue
             name_lower = rpt_file.name.lower()
 
             if "timing_summary" in name_lower or (
@@ -48,7 +55,11 @@ class ReportParser:
     def parse_file(self, rpt_file: Path) -> Findings:
         """解析单个 .rpt 文件"""
         findings = Findings()
-        content = rpt_file.read_text(encoding="utf-8", errors="ignore")
+        try:
+            content = rpt_file.read_text(encoding="utf-8", errors="ignore")
+        except (OSError, PermissionError) as e:
+            logger.warning("Cannot read report file %s: %s", rpt_file, e)
+            return findings
         name_lower = rpt_file.name.lower()
 
         if "timing_summary" in name_lower:

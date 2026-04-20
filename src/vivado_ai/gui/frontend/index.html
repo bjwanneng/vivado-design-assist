@@ -331,7 +331,7 @@ function renderIssues(issues) {
       + '<div class="title"><span>'
       + '<span class="sev-dot ' + sev + '"></span>'
       + esc(issue.rule_id) + ': ' + esc(issue.rule_name)
-      + '</span><span class="badge ' + bclass + '">' + issue.severity + '</span></div>'
+      + '</span><span class="badge ' + bclass + '">' + esc(issue.severity) + '</span></div>'
       + '<div class="detail">'
       + '<p>' + esc(issue.message) + '</p>'
       + (issue.detail ? '<p style="margin-top:4px">' + esc(issue.detail) + '</p>' : '')

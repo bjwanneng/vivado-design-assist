@@ -1,6 +1,7 @@
 """Tests for web server mode"""
 
 import json
+import threading
 from io import BytesIO
 from unittest.mock import MagicMock
 
@@ -59,9 +60,11 @@ def mock_backend():
     backend.run_now.return_value = {"success": True}
     VMCRequestHandler.backend = backend
     VMCRequestHandler.sse_clients = []
+    VMCRequestHandler._sse_lock = threading.Lock()
     yield backend
     VMCRequestHandler.backend = None
     VMCRequestHandler.sse_clients = None
+    VMCRequestHandler._sse_lock = None
 
 
 class TestStaticFiles:
