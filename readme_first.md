@@ -1,7 +1,7 @@
 # Vivado Methodology Checker (VMC) - 项目当前状态
 
-> 更新时间: 2026-04-17
-> 版本: v2.1 AI 增强完成
+> 更新时间: 2026-04-20
+> 版本: v2.2 Web GUI 模式
 
 ---
 
@@ -35,7 +35,9 @@ vivado-ai lint --xdc <files>           # Pre-synthesis 检查
 vivado-ai check --reports-dir <dir>     # 报告解析
 vivado-ai analyze --log-dir <dir>       # Log 分析
 vivado-ai rules                         # 列出 49 条规则
-vivado-ai gui                            # 启动浮窗
+vivado-ai gui                            # 启动 GUI (auto 模式)
+vivado-ai gui --mode web                # 强制浏览器模式
+vivado-ai gui --mode native             # 强制 pywebview 浮窗
 vivado-ai gui --uninstall               # 卸载 Vivado 集成
 ```
 
@@ -47,7 +49,8 @@ vivado-ai gui --uninstall               # 卸载 Vivado 集成
 | Tcl 客户端 | gui/tcl_client.py | TCP 连接 Vivado |
 | Hook 生成器 | gui/hooks.py | post_synth/place/route.tcl |
 | 后端 | gui/app.py | VivadoProbe + BuildWatcher + 状态机 |
-| 前端 | gui/frontend/index.html | 暗色主题浮窗 UI |
+| Web 服务器 | gui/web_server.py | 纯 stdlib HTTP + SSE (零依赖) |
+| 前端 | gui/frontend/index.html | 暗色主题 UI (pywebview/web 双模式) |
 
 ### 基础设施 ✅
 
@@ -55,7 +58,7 @@ vivado-ai gui --uninstall               # 卸载 Vivado 集成
 - 3 个解析器 (report/log/xdc)
 - AI Interpreter (可选)
 - YAML 规则配置
-- 65 个单元测试全部通过
+- 77 个单元测试全部通过
 
 ### AI 增强 ✅ (v2.1)
 
@@ -65,6 +68,16 @@ vivado-ai gui --uninstall               # 卸载 Vivado 集成
 | AI 跨 issue 根因分析 | LLM 归纳所有 FAIL/CRITICAL 的共同根因 |
 | AI 单 issue 解读 | 为每个违规生成中文解释和修复建议 |
 | `--no-ai` / `enable_ai=False` | 无 API key 时完全离线可用 |
+
+### Web GUI 模式 ✅ (v2.2)
+
+| 功能 | 说明 |
+|------|------|
+| 纯 stdlib HTTP 服务器 | 零外部依赖，适用于无 Qt/GTK 的 Linux 服务器 |
+| SSE 状态推送 | 实时推送 Vivado 连接/分析状态 |
+| 自动模式检测 | `auto` 模式先试 pywebview，失败自动切 web server |
+| `--mode web/native/auto` | 手动指定 GUI 模式 |
+| `--port` | 自定义端口（默认 19877） |
 
 ---
 
