@@ -76,8 +76,7 @@ vivado-ai gui --uninstall               # 卸载 Vivado 集成
 | 纯 stdlib HTTP 服务器 | 零外部依赖，适用于无 Qt/GTK 的 Linux 服务器 |
 | SSE 状态推送 | 实时推送 Vivado 连接/分析状态 |
 | 自动模式检测 | `auto` 模式先试 pywebview，失败自动切 web server |
-| `--mode web/native/auto` | 手动指定 GUI 模式 |
-| `--port` | 自定义端口（默认 19877） |
+| 自动选端口 + 打开浏览器 | 端口冲突自动递增，启动后自动打开浏览器 |
 
 ---
 
