@@ -77,6 +77,7 @@ class Backend:
         self._observer: Optional[Observer] = None
         self._window = None
         self._polling = True
+        self._state_callbacks: list[Callable[[str], None]] = []
 
     # ── 前端可读属性 ──
 
@@ -91,6 +92,10 @@ class Backend:
     @property
     def analysis_result(self) -> Optional[dict]:
         return self._analysis_result
+
+    def add_state_callback(self, cb: Callable[[str], None]):
+        """注册状态变化回调（供 web server SSE 使用）"""
+        self._state_callbacks.append(cb)
 
     # ── 初始化 ──
 
@@ -245,6 +250,11 @@ class Backend:
                     f"window.dispatchEvent(new CustomEvent('vmc-state',"
                     f"{{detail:'{new_state}'}}));"
                 )
+            except Exception:
+                pass
+        for cb in self._state_callbacks:
+            try:
+                cb(new_state)
             except Exception:
                 pass
 

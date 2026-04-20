@@ -65,8 +65,11 @@ def create_parser() -> argparse.ArgumentParser:
     subparsers.add_parser("rules", help="List all available rules")
 
     # ── gui ──
-    gui_p = subparsers.add_parser("gui", help="Launch floating window (auto-detect Vivado)")
+    gui_p = subparsers.add_parser("gui", help="Launch GUI (auto-detect Vivado)")
     gui_p.add_argument("--uninstall", action="store_true", help="Remove VMC integration from Vivado init.tcl")
+    gui_p.add_argument("--mode", choices=["native", "web", "auto"], default="auto",
+                       help="GUI mode: native=pywebview, web=browser, auto=try native first (default: auto)")
+    gui_p.add_argument("--port", type=int, default=19877, help="Web server port (default: 19877)")
 
     return parser
 
@@ -217,7 +220,7 @@ def _cmd_list_rules():
 
 
 def _cmd_gui(args):
-    """启动 GUI 浮窗"""
+    """启动 GUI"""
     if args.uninstall:
         from vivado_ai.gui.installer import VivadoAutoInstaller
         installer = VivadoAutoInstaller()
@@ -225,13 +228,37 @@ def _cmd_gui(args):
         console.print("[green]VMC integration removed from Vivado init.tcl[/green]")
         return
 
+    mode = args.mode
+
+    if mode == "auto":
+        try:
+            import webview  # noqa: F401
+            mode = "native"
+        except ImportError:
+            mode = "web"
+
+    if mode == "native":
+        try:
+            from vivado_ai.gui.app import start_gui
+            start_gui()
+            return
+        except ImportError as e:
+            console.print(f"[yellow]pywebview not available:[/yellow] {e}")
+            console.print("Falling back to web server mode...")
+            mode = "web"
+
+    # web mode
     try:
-        from vivado_ai.gui.app import start_gui
-        start_gui()
+        from vivado_ai.gui.app import Backend
+        from vivado_ai.gui.web_server import start_web_server
     except ImportError as e:
         console.print(f"[red]GUI dependencies not installed:[/red] {e}")
         console.print("Install with: pip install vivado-ai[gui]")
         sys.exit(1)
+
+    backend = Backend()
+    backend.initialize()
+    start_web_server(backend, port=args.port)
 
 
 if __name__ == "__main__":

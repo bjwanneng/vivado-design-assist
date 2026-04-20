@@ -213,6 +213,31 @@ body {
 </div>
 
 <script>
+// ── Transport Adapter: auto-detect pywebview vs web server ──
+const API = window.pywebview
+  ? {
+      initialize: () => window.pywebview.api.initialize(),
+      runNow: () => window.pywebview.api.run_now(),
+      getResult: () => window.pywebview.api.analysis_result,
+      onState: (handler) => {
+        window.addEventListener('vmc-state', (e) => handler(e.detail));
+      }
+    }
+  : {
+      initialize: () => fetch('/api/initialize').then(r => r.json()),
+      runNow: () => fetch('/api/run_now', {method:'POST'}).then(r => r.json()),
+      getResult: () => fetch('/api/analysis_result').then(r => r.json()),
+      onState: (handler) => {
+        let delay = 1000;
+        function connect() {
+          const es = new EventSource('/api/events');
+          es.onmessage = (e) => { delay = 1000; handler(JSON.parse(e.data).state); };
+          es.onerror = () => { es.close(); setTimeout(connect, delay); delay = Math.min(delay * 2, 30000); };
+        }
+        connect();
+      }
+    };
+
 const states = {
   waiting: document.getElementById('stateWaiting'),
   ready: document.getElementById('stateReady'),
@@ -226,11 +251,10 @@ function showState(name) {
 }
 
 // Listen for backend state changes
-window.addEventListener('vmc-state', (e) => {
-  const state = e.detail;
+API.onState((state) => {
   showState(state);
-  if (state === 'results' && pywebview.api.analysis_result) {
-    pywebview.api.analysis_result.then(renderResults);
+  if (state === 'results') {
+    API.getResult().then(renderResults);
   }
 });
 
@@ -246,7 +270,7 @@ document.querySelectorAll('.tab').forEach(tab => {
 });
 
 function runNow() {
-  pywebview.api.run_now();
+  API.runNow();
   showState('analyzing');
 }
 
