@@ -61,14 +61,18 @@ class TUI:
         # 状态面板
         state_lines = []
         if state == "waiting":
-            state_lines = ["扫描 Vivado 中..."]
+            state_lines = [
+                "扫描 Vivado 中...",
+                "",
+                "[dim]提示：首次使用需重启 Vivado 以加载 Tcl Server[/dim]",
+            ]
         elif state == "ready":
             state_lines = [
                 "[green]Vivado 已连接[/green]",
                 "按 [bright_cyan]A[/bright_cyan] 触发分析",
             ]
         elif state == "analyzing":
-            state_lines = ["[[yellow]分析中...[/yellow]]"]
+            state_lines = ["[yellow]分析中...[/yellow]"]
 
         state_text = "\n".join(state_lines)
         state_panel = Panel(

@@ -268,8 +268,17 @@ def _cmd_gui(args):
             console.print("Install with: pip install vivado-ai[gui]")
             sys.exit(1)
 
+        # 启用 INFO 级别日志，让连接诊断信息可见
+        import logging
+        logging.basicConfig(level=logging.INFO, format="[%(levelname)s] %(message)s")
+
         backend = Backend()
-        backend.initialize()
+        init_result = backend.initialize()
+        if init_result.get("need_restart"):
+            console.print("[yellow]VMC Tcl Server 已安装到 Vivado init.tcl。[/yellow]")
+            console.print("[yellow]检测到 Vivado 正在运行但未加载 Server，请重启 Vivado 后再次运行。[/yellow]")
+            sys.exit(0)
+
         tui = TUI(backend)
         console.print("[bright_cyan]VMC TUI 启动... 按 Ctrl+C 退出[/bright_cyan]")
         tui.run()

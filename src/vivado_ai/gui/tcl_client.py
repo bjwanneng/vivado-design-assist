@@ -37,7 +37,7 @@ class VivadoTclClient:
             logger.info("Connected to Vivado at %s:%d", self.host, self.port)
             return True
         except (ConnectionRefusedError, socket.timeout, OSError) as e:
-            logger.debug("Cannot connect to Vivado: %s", e)
+            logger.info("Cannot connect to Vivado Tcl Server at %s:%d: %s", self.host, self.port, e)
             self._socket = None
             return False
 

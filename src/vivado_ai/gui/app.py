@@ -134,6 +134,7 @@ class Backend:
                 self._set_state("waiting")
             return
 
+        logger.info("Found Vivado process (pid=%s), trying to connect...", proc.get("pid"))
         client = VivadoTclClient()
         if client.connect():
             with self._lock:
@@ -146,6 +147,12 @@ class Backend:
 
                 self.tcl_client = client
             self._on_connected()
+        else:
+            logger.warning(
+                "Vivado process found but Tcl Server not responding on port %d. "
+                "If this is the first run, restart Vivado to load the injected init.tcl.",
+                VivadoTclClient.DEFAULT_PORT,
+            )
 
     def _on_connected(self):
         with self._lock:
