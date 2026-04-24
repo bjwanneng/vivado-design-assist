@@ -109,19 +109,21 @@ vivado-ai rules
 
 ### `vivado-ai gui` — 启动 GUI
 
-启动图形界面，支持自动检测最佳模式。
-
 ```bash
-vivado-ai gui [--mode native|web|tui|auto]
-vivado-ai gui --uninstall
+vivado-ai gui                          # 默认 Native 模式
+vivado-ai gui --mode native            # 桌面浮窗（pywebview）
+vivado-ai gui --mode web               # 浏览器模式
+vivado-ai gui --mode tui               # 终端实时面板
+vivado-ai gui --mode auto              # 自动检测最佳模式
+vivado-ai gui --uninstall              # 卸载 Vivado 集成
 ```
 
 | 参数 | 说明 |
 |------|------|
-| `--mode auto` | 自动检测（默认）：有 TTY → TUI；有 pywebview → Native；否则 Web |
-| `--mode native` | 桌面浮窗（pywebview），适合 Windows/macOS |
+| `--mode native` | 桌面浮窗（pywebview），适合 Windows/macOS（**默认**） |
 | `--mode web` | 浏览器模式，适合 Linux 服务器 / 远程桌面 |
 | `--mode tui` | 终端实时面板，适合 SSH 环境 |
+| `--mode auto` | 自动检测：有 TTY → TUI；有 pywebview → Native；否则 Web |
 | `--uninstall` | 从 Vivado `init.tcl` 中移除 VMC 集成 |
 
 ---

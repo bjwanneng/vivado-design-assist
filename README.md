@@ -53,19 +53,23 @@ vivado-ai check --reports-dir build/reports/ --output report.md
 vivado-ai analyze --log-dir build/logs/
 ```
 
-### 启动 GUI（自动检测最佳模式）
+### 启动 GUI（默认 Native 模式）
 
 ```bash
-vivado-ai gui
+vivado-ai gui               # 默认 Native 桌面浮窗模式
+vivado-ai gui --mode web    # 浏览器模式
+vivado-ai gui --mode tui    # 终端模式
+vivado-ai gui --mode auto   # 自动检测最佳模式
 ```
 
 | 模式 | 适用场景 | 依赖 |
 |------|---------|------|
-| **Native** | Windows / macOS 本地桌面，需要浮窗体验 | `pywebview` |
-| **Web** | Linux 服务器、远程桌面、NoMachine 等环境 | 零额外依赖 |
+| **Native**（默认） | Windows / macOS 本地桌面，浮窗体验 | `pywebview` |
+| **Web** | Linux 服务器、远程桌面、NoMachine 等 | 零额外依赖 |
 | **TUI** | SSH 远程终端、无桌面环境 | `rich`（已随基础安装） |
+| **Auto** | 自动检测环境选择最佳模式 | — |
 
-自动检测逻辑：有 TTY 终端 → TUI；有 `pywebview` → Native；否则 → Web。
+`--mode auto` 检测逻辑：有 TTY 终端 → TUI；有 `pywebview` → Native；否则 → Web。
 
 ### 列出所有规则
 

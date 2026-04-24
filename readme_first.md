@@ -97,7 +97,7 @@ vivado-ai gui --uninstall               # 卸载 Vivado 集成
 | `tui` (终端) | SSH 远程 / 无桌面环境 | 零额外依赖 (Rich) |
 | `auto` (自动) | 自动检测环境选择最佳模式 | — |
 
-**自动检测逻辑**：
+**默认模式**：`native`（桌面浮窗）。如需自动检测，显式使用 `--mode auto`：
 - 有 TTY 终端 → TUI 模式
 - 有 pywebview → Native 模式
 - 其他 → Web 模式
@@ -120,13 +120,14 @@ vivado-ai analyze --log-dir build/logs/
 ### GUI 模式
 
 ```bash
-# 自动检测最佳模式
+# 默认 Native 桌面浮窗模式
 vivado-ai gui
 
 # 指定模式
+vivado-ai gui --mode native  # 浮窗 (Windows/macOS)
 vivado-ai gui --mode web     # 浏览器 (Linux 服务器)
 vivado-ai gui --mode tui     # 终端 (SSH 环境)
-vivado-ai gui --mode native  # 浮窗 (Windows/macOS)
+vivado-ai gui --mode auto    # 自动检测最佳模式
 
 # 首次启动自动安装 init.tcl，重启 Vivado 后自动生效：
 # - Vivado 启动时自动加载 Tcl Server (port 19876)

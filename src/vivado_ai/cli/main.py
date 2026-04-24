@@ -67,8 +67,8 @@ def create_parser() -> argparse.ArgumentParser:
     # ── gui ──
     gui_p = subparsers.add_parser("gui", help="Launch GUI (auto-detect Vivado)")
     gui_p.add_argument("--uninstall", action="store_true", help="Remove VMC integration from Vivado init.tcl")
-    gui_p.add_argument("--mode", choices=["native", "web", "tui", "auto"], default="auto",
-                       help="GUI mode: native=pywebview, web=browser, tui=terminal, auto=try native first (default: auto)")
+    gui_p.add_argument("--mode", choices=["native", "web", "tui", "auto"], default="native",
+                       help="GUI mode: native=pywebview, web=browser, tui=terminal, auto=auto-detect (default: native)")
 
     return parser
 
