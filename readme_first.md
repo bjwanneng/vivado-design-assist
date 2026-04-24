@@ -64,6 +64,13 @@ vivado-ai gui --uninstall               # 卸载 Vivado 集成
 | 中优先级 | #7 Backend线程安全Lock, #8 run_now异步分析, #9 重连资源清理, #10 SSE clients线程安全, #11 keyboard可选依赖, #12 Tcl路径引用, #13 Hook路径转义 |
 | 低优先级 | #14 输入校验, #15 total_rules填充, #16 JSON/Markdown PASS一致性, #17 重复规则ID警告, #18 LLM重试仅限瞬态异常, #19 报告文件错误处理, #20 opt阶段检测, #21 XSS防护 |
 
+### 文档 ✅
+
+| 文件 | 说明 |
+|------|------|
+| [README.md](README.md) | 项目总览、功能特性、快速开始、项目结构 |
+| [USAGE.md](USAGE.md) | CLI 命令详解、GUI 模式、Vivado 集成、AI 功能、典型工作流 |
+
 ### 基础设施 ✅
 
 - pyproject.toml + pip install -e .
