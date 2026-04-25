@@ -42,11 +42,25 @@ class AppConfig(BaseSettings):
 
 
 def _get_user_config_path() -> Path:
-    """获取用户配置文件路径"""
+    """获取用户配置文件路径
+    
+    优先使用项目目录下的 .vmc 目录（避免只读文件系统问题）
+    """
+    # 尝试项目目录
+    project_dir = Path(__file__).parent.parent.parent.parent / ".vmc"
+    try:
+        project_dir.mkdir(parents=True, exist_ok=True)
+        return project_dir / "settings.json"
+    except OSError:
+        pass
+    
+    # 回退到用户主目录
     home = Path.home()
-    # Linux/macOS: ~/.config/vmc/settings.json
     config_dir = home / ".config" / "vmc"
-    config_dir.mkdir(parents=True, exist_ok=True)
+    try:
+        config_dir.mkdir(parents=True, exist_ok=True)
+    except OSError:
+        pass
     return config_dir / "settings.json"
 
 
