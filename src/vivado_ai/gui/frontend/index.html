@@ -5,9 +5,9 @@
 <title>VMC - Vivado Methodology Checker</title>
 <style>
 :root {
-  --bg: #1e1e2e;
-  --card: #2a2a3d;
-  --border: #3a3a50;
+  --bg: #0f0f1a;
+  --card: #1a1a2e;
+  --border: #2a2a40;
   --text: #e0e0e8;
   --muted: #8888a0;
   --accent: #7c3aed;
@@ -24,6 +24,7 @@ body {
   padding: 16px;
   overflow-y: auto;
   height: 100vh;
+  font-size: 13px;
 }
 
 /* Header */
@@ -43,7 +44,10 @@ body {
 .score.pass { background: rgba(34,197,94,0.15); color: var(--pass); }
 .score.fail { background: rgba(239,68,68,0.15); color: var(--fail); }
 
-/* Status */
+/* State panels */
+.panel { display: none; }
+.panel.active { display: block; }
+
 .status {
   text-align: center;
   padding: 40px 20px;
@@ -59,38 +63,133 @@ body {
 }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-/* Tabs */
-.tabs { display: flex; gap: 4px; margin-bottom: 12px; flex-wrap: wrap; }
-.tab {
-  padding: 4px 10px; border-radius: 6px; font-size: 12px;
-  cursor: pointer; background: var(--card);
-  border: 1px solid var(--border); color: var(--muted);
-  transition: all 0.2s;
+/* Instance selection */
+.instance-list {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 12px;
 }
-.tab.active { background: var(--accent); color: white; border-color: var(--accent); }
-.tab:hover { border-color: var(--accent); }
+.instance-item {
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.2s;
+  border: 1px solid transparent;
+  margin-bottom: 4px;
+}
+.instance-item:hover {
+  background: rgba(124,58,237,0.1);
+  border-color: var(--accent);
+}
+.instance-item .name { font-weight: 600; color: var(--text); }
+.instance-item .meta { font-size: 11px; color: var(--muted); }
+
+/* Phase table */
+.phase-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 12px;
+  font-size: 12px;
+}
+.phase-table th {
+  text-align: left;
+  padding: 6px 8px;
+  color: var(--muted);
+  border-bottom: 1px solid var(--border);
+  font-weight: 600;
+}
+.phase-table td {
+  padding: 8px;
+  border-bottom: 1px solid var(--border);
+}
+.phase-table tr:hover { background: rgba(255,255,255,0.02); }
+
+.status-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+}
+.status-badge.complete { background: rgba(34,197,94,0.15); color: var(--pass); }
+.status-badge.running { background: rgba(245,158,11,0.15); color: var(--warn); }
+.status-badge.failed { background: rgba(239,68,68,0.15); color: var(--fail); }
+.status-badge.waiting { background: rgba(136,136,160,0.1); color: var(--muted); }
 
 /* Project info */
 .project-info {
-  font-size: 11px; color: var(--muted); margin-bottom: 10px;
-  word-break: break-all;
+  font-size: 11px;
+  color: var(--muted);
+  margin-bottom: 10px;
+  padding: 8px;
+  background: var(--card);
+  border-radius: 6px;
 }
 
-/* Issue Cards */
+/* Buttons */
+.btn {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  margin-right: 8px;
+  margin-bottom: 8px;
+}
+.btn-primary { background: var(--accent); color: white; }
+.btn-primary:hover { opacity: 0.9; }
+.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn-secondary { background: var(--border); color: var(--text); }
+
+/* Guide */
+.guide {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px;
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 12px;
+}
+.guide kbd {
+  display: inline-block;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: var(--border);
+  color: var(--text);
+  font-family: monospace;
+  font-size: 11px;
+}
+
+/* Issue cards */
 .issue-card {
-  background: var(--card); border: 1px solid var(--border);
-  border-radius: 8px; padding: 10px 12px; margin-bottom: 8px;
-  cursor: pointer; transition: border-color 0.2s;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin-bottom: 8px;
+  cursor: pointer;
+  transition: border-color 0.2s;
 }
 .issue-card:hover { border-color: var(--accent); }
 .issue-card .title {
-  font-size: 12px; font-weight: 500;
-  display: flex; justify-content: space-between; align-items: center;
+  font-size: 12px;
+  font-weight: 500;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 .issue-card .detail {
-  display: none; margin-top: 8px; padding-top: 8px;
+  display: none;
+  margin-top: 8px;
+  padding-top: 8px;
   border-top: 1px solid var(--border);
-  font-size: 11px; color: var(--muted); line-height: 1.6;
+  font-size: 11px;
+  color: var(--muted);
+  line-height: 1.6;
 }
 .issue-card.expanded .detail { display: block; }
 
@@ -112,6 +211,43 @@ body {
 .badge.b-warn { background: rgba(245,158,11,0.15); color: var(--warn); }
 .badge.b-info { background: rgba(96,165,250,0.15); color: #60a5fa; }
 
+/* AI Summary */
+.ai-panel {
+  background: rgba(124,58,237,0.08);
+  border: 1px solid rgba(124,58,237,0.2);
+  border-radius: 8px;
+  padding: 12px;
+  margin-top: 12px;
+  font-size: 12px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+.ai-panel h3 {
+  color: var(--accent);
+  font-size: 13px;
+  margin-bottom: 8px;
+}
+
+/* Tabs */
+.tabs { display: flex; gap: 4px; margin-bottom: 12px; flex-wrap: wrap; }
+.tab {
+  padding: 4px 10px; border-radius: 6px; font-size: 12px;
+  cursor: pointer; background: var(--card);
+  border: 1px solid var(--border); color: var(--muted);
+  transition: all 0.2s;
+}
+.tab.active { background: var(--accent); color: white; border-color: var(--accent); }
+.tab:hover { border-color: var(--accent); }
+
+/* Root cause panel */
+.root-cause-panel {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 8px; padding: 10px 12px; margin-bottom: 12px;
+  border-left: 3px solid var(--accent);
+}
+.root-cause-panel h3 { font-size: 12px; color: var(--accent); margin-bottom: 6px; }
+.root-cause-panel p { font-size: 11px; color: var(--muted); line-height: 1.6; white-space: pre-wrap; }
+
 .fix {
   background: rgba(34,197,94,0.08);
   border: 1px solid rgba(34,197,94,0.2);
@@ -127,39 +263,6 @@ body {
   cursor: pointer; font-size: 10px;
 }
 
-/* Buttons */
-.btn {
-  width: 100%; padding: 8px; border: none; border-radius: 8px;
-  font-size: 13px; font-weight: 500; cursor: pointer; margin-top: 8px;
-}
-.btn-primary { background: var(--accent); color: white; }
-.btn-primary:hover { opacity: 0.9; }
-.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
-
-.connected-badge {
-  display: inline-block; padding: 2px 8px; border-radius: 4px;
-  font-size: 11px; color: var(--pass);
-  background: rgba(34,197,94,0.1);
-  margin-bottom: 8px;
-}
-
-/* Root cause panel */
-.root-cause-panel {
-  background: var(--card); border: 1px solid var(--border);
-  border-radius: 8px; padding: 10px 12px; margin-bottom: 12px;
-  border-left: 3px solid var(--accent);
-}
-.root-cause-panel h3 { font-size: 12px; color: var(--accent); margin-bottom: 6px; }
-.root-cause-panel p { font-size: 11px; color: var(--muted); line-height: 1.6; white-space: pre-wrap; }
-
-/* Forum link */
-.forum-link {
-  display: inline-block; margin-top: 4px; font-size: 10px;
-  color: var(--accent); text-decoration: none;
-}
-.forum-link:hover { text-decoration: underline; }
-
-/* AI explanation */
 .ai-section {
   background: rgba(124,58,237,0.08); border: 1px solid rgba(124,58,237,0.2);
   border-radius: 6px; padding: 8px; margin-top: 6px;
@@ -169,143 +272,354 @@ body {
 </head>
 <body>
 
-<div id="app">
-  <div class="header">
-    <h1>VMC - Methodology Checker</h1>
-    <div id="scoreDisplay" class="score pass" style="display:none">--</div>
-  </div>
+<div class="header">
+  <h1>VMC - Methodology Checker</h1>
+  <div id="scoreDisplay" class="score pass" style="display:none">--</div>
+</div>
 
-  <!-- State: init / waiting -->
-  <div id="stateWaiting" class="status">
+<!-- State: waiting -->
+<div id="panel-waiting" class="panel active">
+  <div class="status">
     <div class="spinner"></div>
-    <p id="waitingText">Scanning for Vivado...</p>
-    <p class="project-info" id="projectInfo"></p>
+    <p id="waitingText">扫描 Vivado 中...</p>
+    <p style="font-size:11px;margin-top:8px;color:var(--muted)">提示：首次使用需重启 Vivado 以加载 Tcl Server</p>
+  </div>
+</div>
+
+<!-- State: select_vivado -->
+<div id="panel-select" class="panel">
+  <div class="instance-list" id="instanceList">
+    <p style="color:var(--muted);margin-bottom:8px">检测到多个 Vivado 实例，请选择：</p>
+  </div>
+</div>
+
+<!-- State: ready -->
+<div id="panel-ready" class="panel">
+  <div class="project-info" id="projectInfo"></div>
+
+  <table class="phase-table">
+    <thead>
+      <tr><th>#</th><th>阶段</th><th>状态</th><th>进度</th><th>报告</th><th>操作</th></tr>
+    </thead>
+    <tbody id="phaseTableBody"></tbody>
+  </table>
+
+  <div>
+    <button class="btn btn-primary" onclick="analyzeStage('opt')">分析 OPT</button>
+    <button class="btn btn-primary" onclick="analyzeStage('place')">分析布局</button>
+    <button class="btn btn-primary" onclick="analyzeStage('route')">分析布线</button>
+    <button class="btn btn-secondary" onclick="clearReports()">清理报告</button>
   </div>
 
-  <!-- State: ready -->
-  <div id="stateReady" style="display:none">
-    <div class="connected-badge">Vivado Connected</div>
-    <p class="project-info" id="projectInfoReady"></p>
-    <button class="btn btn-primary" onclick="runNow()">Analyze Now</button>
-    <p style="color:var(--muted);font-size:11px;text-align:center;margin-top:8px;">
-      Hooks injected. Reports auto-generate after each build stage.
-    </p>
+  <div class="guide">
+    <strong>快捷键：</strong><br>
+    点击上方按钮触发对应阶段的分析<br>
+    <kbd>1</kbd> 分析 OPT（全面） <kbd>2</kbd> 分析布局（增量） <kbd>3</kbd> 分析布线（增量）
   </div>
+</div>
 
-  <!-- State: analyzing -->
-  <div id="stateAnalyzing" class="status" style="display:none">
+<!-- State: analyzing -->
+<div id="panel-analyzing" class="panel">
+  <div class="status">
     <div class="spinner"></div>
-    <p>Analyzing methodology compliance...</p>
+    <p>分析中，请等待 Vivado 生成报告...</p>
+    <p style="font-size:11px;margin-top:8px;color:var(--muted)">报告命令在 Vivado 中执行，可能需要几分钟</p>
+  </div>
+</div>
+
+<!-- State: results -->
+<div id="panel-results" class="panel">
+  <div id="rootCausePanel" class="root-cause-panel" style="display:none"></div>
+
+  <div class="tabs">
+    <div class="tab active" data-filter="all" onclick="setFilter('all')">全部</div>
+    <div class="tab" data-filter="CRITICAL" onclick="setFilter('CRITICAL')">严重</div>
+    <div class="tab" data-filter="FAIL" onclick="setFilter('FAIL')">失败</div>
+    <div class="tab" data-filter="WARN" onclick="setFilter('WARN')">警告</div>
   </div>
 
-  <!-- State: results -->
-  <div id="stateResults" style="display:none">
-    <div id="rootCausePanel" class="root-cause-panel" style="display:none"></div>
-    <div class="tabs">
-      <div class="tab active" data-filter="all">All</div>
-      <div class="tab" data-filter="CRITICAL">CRITICAL</div>
-      <div class="tab" data-filter="FAIL">FAIL</div>
-      <div class="tab" data-filter="WARN">WARN</div>
-    </div>
-    <div id="issueList"></div>
-    <button class="btn btn-primary" onclick="runNow()">Re-Analyze</button>
+  <div id="aiSummaryPanel" class="ai-panel" style="display:none">
+    <h3>AI 分析总结</h3>
+    <div id="aiSummaryContent"></div>
+  </div>
+
+  <div id="issueList"></div>
+
+  <div style="margin-top:12px">
+    <button class="btn btn-primary" onclick="backToReady()">返回</button>
+    <button class="btn btn-secondary" onclick="reAnalyze()">重新分析</button>
   </div>
 </div>
 
 <script>
-// ── Transport Adapter: auto-detect pywebview vs web server ──
-const API = window.pywebview
-  ? {
-      initialize: () => window.pywebview.api.initialize(),
-      runNow: () => window.pywebview.api.run_now(),
-      getResult: () => window.pywebview.api.analysis_result,
-      onState: (handler) => {
-        window.addEventListener('vmc-state', (e) => handler(e.detail));
-      }
-    }
-  : {
-      initialize: () => fetch('/api/initialize').then(r => r.json()),
-      runNow: () => fetch('/api/run_now', {method:'POST'}).then(r => r.json()),
-      getResult: () => fetch('/api/analysis_result').then(r => r.json()),
-      onState: (handler) => {
-        let delay = 1000;
-        function connect() {
-          const es = new EventSource('/api/events');
-          es.onmessage = (e) => { delay = 1000; handler(JSON.parse(e.data).state); };
-          es.onerror = () => { es.close(); setTimeout(connect, delay); delay = Math.min(delay * 2, 30000); };
-        }
-        connect();
-      }
-    };
+// ── API Client ──
+let API_BASE = '';
+let ws = null;
+let currentFilter = 'all';
+let currentResult = null;
 
-const states = {
-  waiting: document.getElementById('stateWaiting'),
-  ready: document.getElementById('stateReady'),
-  analyzing: document.getElementById('stateAnalyzing'),
-  results: document.getElementById('stateResults'),
-};
-
-function showState(name) {
-  Object.values(states).forEach(el => el.style.display = 'none');
-  if (states[name]) states[name].style.display = '';
+async function apiGet(path) {
+  const r = await fetch(API_BASE + path);
+  return r.json();
 }
 
-// Listen for backend state changes
-API.onState((state) => {
-  showState(state);
-  if (state === 'results') {
-    API.getResult().then(renderResults);
-  }
-});
+async function apiPost(path) {
+  const r = await fetch(API_BASE + path, { method: 'POST' });
+  return r.json();
+}
 
-// Tab filtering
-let currentFilter = 'all';
-document.querySelectorAll('.tab').forEach(tab => {
-  tab.addEventListener('click', () => {
-    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-    tab.classList.add('active');
-    currentFilter = tab.dataset.filter;
-    renderIssues(window._issues || []);
+// ── WebSocket ──
+function connectWebSocket() {
+  if (!API_BASE) return;
+  
+  const wsUrl = API_BASE.replace(/^http/, 'ws') + '/ws';
+  ws = new WebSocket(wsUrl);
+
+  ws.onopen = () => {
+    console.log('WebSocket connected');
+  };
+
+  ws.onmessage = (e) => {
+    const msg = JSON.parse(e.data);
+    if (msg.type === 'state') {
+      handleStateChange(msg.state);
+    } else if (msg.type === 'result') {
+      currentResult = msg.data;
+      renderResults(msg.data);
+    }
+  };
+
+  ws.onclose = () => {
+    console.log('WebSocket disconnected, retrying...');
+    setTimeout(connectWebSocket, 2000);
+  };
+
+  ws.onerror = (e) => {
+    console.error('WebSocket error:', e);
+  };
+}
+
+// ── Wails API Discovery ──
+function initWails() {
+  let retryCount = 0;
+  const maxRetries = 60;
+  
+  const checkApi = () => {
+    // 已经设置好了
+    if (API_BASE) return;
+    
+    // 尝试 Wails 运行时
+    if (typeof go !== 'undefined' && go.main && go.main.App) {
+      go.main.App.GetAPIURL().then(url => {
+        if (url && url.startsWith('http')) {
+          API_BASE = url;
+          connectWebSocket();
+          fetchInitialState();
+          return;
+        }
+        // URL 还没准备好，继续等待
+        retry();
+      }).catch(() => retry());
+    } else {
+      // 非 Wails 环境（浏览器直接访问 Python 服务）
+      API_BASE = '';
+      connectWebSocket();
+      fetchInitialState();
+    }
+  };
+  
+  const retry = () => {
+    retryCount++;
+    if (retryCount < maxRetries) {
+      setTimeout(checkApi, 500);
+    } else {
+      console.error('Failed to get API URL');
+      document.getElementById('waitingText').textContent = '无法连接到 API 服务，请重启应用';
+    }
+  };
+  
+  checkApi();
+}
+
+function fetchInitialState() {
+  apiGet('/api/state').then(data => {
+    handleStateChange(data.state || 'waiting');
+  }).catch(err => {
+    console.error('Failed to fetch initial state:', err);
   });
-});
+}
 
-function runNow() {
-  API.runNow();
-  showState('analyzing');
+// ── State Management ──
+const panels = {
+  waiting: document.getElementById('panel-waiting'),
+  select_vivado: document.getElementById('panel-select'),
+  ready: document.getElementById('panel-ready'),
+  analyzing: document.getElementById('panel-analyzing'),
+  results: document.getElementById('panel-results'),
+};
+
+function showPanel(name) {
+  Object.values(panels).forEach(p => p.classList.remove('active'));
+  if (panels[name]) panels[name].classList.add('active');
+}
+
+async function handleStateChange(state) {
+  showPanel(state);
+
+  if (state === 'ready') {
+    await refreshReadyPanel();
+  } else if (state === 'select_vivado') {
+    await refreshInstanceList();
+  } else if (state === 'results') {
+    const result = await apiGet('/api/analysis_result');
+    if (result && !result.error) {
+      currentResult = result;
+      renderResults(result);
+    }
+  }
+}
+
+async function refreshReadyPanel() {
+  const [stateData, runStatus] = await Promise.all([
+    apiGet('/api/state'),
+    apiGet('/api/run_status'),
+  ]);
+
+  // Project info
+  const proj = stateData.project_info || {};
+  document.getElementById('projectInfo').innerHTML =
+    (proj.name ? `项目: ${esc(proj.name)}<br>` : '') +
+    (proj.part ? `器件: ${esc(proj.part)}` : '');
+
+  // Phase table
+  const phases = [
+    { key: 'opt', name: 'OPT 后', num: '1' },
+    { key: 'place', name: '布局后', num: '2' },
+    { key: 'route', name: '布线后', num: '3' },
+  ];
+
+  const tbody = document.getElementById('phaseTableBody');
+  tbody.innerHTML = phases.map(p => {
+    const info = runStatus[p.key] || {};
+    const stage = info.stage || 'unknown';
+    const progress = info.progress || '';
+
+    let statusText, statusClass;
+    if (stage === 'complete') { statusText = '已完成'; statusClass = 'complete'; }
+    else if (stage === 'running') { statusText = '运行中'; statusClass = 'running'; }
+    else if (stage === 'failed') { statusText = '失败'; statusClass = 'failed'; }
+    else { statusText = '未开始'; statusClass = 'waiting'; }
+
+    const canAnalyze = stage === 'complete';
+
+    return `<tr>
+      <td>${p.num}</td>
+      <td>${p.name}</td>
+      <td><span class="status-badge ${statusClass}">${statusText}</span></td>
+      <td>${progress || '-'}</td>
+      <td id="report-${p.key}">?</td>
+      <td>${canAnalyze ? '<span style="color:var(--accent)">可分析</span>' : '<span style="color:var(--muted)">不可用</span>'}</td>
+    </tr>`;
+  }).join('');
+}
+
+async function refreshInstanceList() {
+  const data = await apiGet('/api/state');
+  const instances = data.vivado_instances || [];
+  const container = document.getElementById('instanceList');
+
+  let html = '<p style="color:var(--muted);margin-bottom:8px">检测到 ' + instances.length + ' 个 Vivado 实例，请选择：</p>';
+  instances.forEach((inst, i) => {
+    const name = inst.project_name || '未知项目';
+    const part = inst.part || '';
+    const port = inst.port || '';
+    html += `<div class="instance-item" onclick="selectInstance(${i})">
+      <span class="name">${esc(name)}</span>
+      <span class="meta">${part ? '(' + esc(part) + ')' : ''} 端口:${port}</span>
+    </div>`;
+  });
+  container.innerHTML = html;
+}
+
+async function selectInstance(index) {
+  await apiPost('/api/select_vivado/' + index);
+}
+
+async function analyzeStage(stage) {
+  showPanel('analyzing');
+  await apiPost('/api/analyze/' + stage);
+}
+
+async function clearReports() {
+  await apiPost('/api/clear_reports');
+  await refreshReadyPanel();
+}
+
+function backToReady() {
+  showPanel('ready');
+}
+
+async function reAnalyze() {
+  await analyzeStage('current');
+}
+
+// ── Results Rendering ──
+function setFilter(filter) {
+  currentFilter = filter;
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelector('.tab[data-filter="' + filter + '"]').classList.add('active');
+  if (currentResult) renderResults(currentResult);
 }
 
 function renderResults(data) {
   if (!data || data.error) {
-    showState('results');
     document.getElementById('issueList').innerHTML =
-      '<p style="color:var(--fail)">' + (data ? data.error : 'No data') + '</p>';
+      '<p style="color:var(--fail)">' + (data ? data.error : '无数据') + '</p>';
     return;
   }
 
+  // Score
   const scoreEl = document.getElementById('scoreDisplay');
-  scoreEl.textContent = data.score;
+  scoreEl.textContent = data.score + '/100';
   scoreEl.className = 'score ' + (data.score >= 80 ? 'pass' : 'fail');
   scoreEl.style.display = '';
 
-  // Root cause summary
+  // Root cause
   const rcp = document.getElementById('rootCausePanel');
   if (data.root_cause_summary) {
-    rcp.innerHTML = '<h3>Root Cause Analysis</h3><p>' + esc(data.root_cause_summary) + '</p>';
+    rcp.innerHTML = '<h3>根因分析</h3><p>' + esc(data.root_cause_summary) + '</p>';
     rcp.style.display = '';
   } else {
     rcp.style.display = 'none';
   }
 
-  window._issues = data.issues || [];
-  renderIssues(window._issues);
-  showState('results');
+  // AI Summary
+  const aiPanel = document.getElementById('aiSummaryPanel');
+  const aiContent = document.getElementById('aiSummaryContent');
+  if (data.ai_summary) {
+    aiContent.textContent = data.ai_summary;
+    aiPanel.style.display = '';
+  } else {
+    aiPanel.style.display = 'none';
+  }
+
+  // Issues
+  const issues = data.issues || [];
+  renderIssues(issues);
+
+  showPanel('results');
 }
 
 function renderIssues(issues) {
-  const list = document.getElementById('issueList');
   const filtered = currentFilter === 'all'
     ? issues
     : issues.filter(i => i.severity === currentFilter);
+
+  const list = document.getElementById('issueList');
+  if (filtered.length === 0) {
+    list.innerHTML = '<p style="color:var(--muted);text-align:center;padding:20px">没有问题</p>';
+    return;
+  }
 
   list.innerHTML = filtered.map(issue => {
     const sev = issue.severity.toLowerCase();
@@ -314,28 +628,21 @@ function renderIssues(issues) {
       ? '<div class="fix">' + esc(issue.fix_suggestion)
         + '<button class="copy-btn" onclick="event.stopPropagation();copyFix(this,'
         + JSON.stringify(JSON.stringify(issue.fix_suggestion))
-        + ')">Copy</button></div>'
-      : '';
-    const forumHtml = issue.forum_url
-      ? '<a class="forum-link" href="' + esc(issue.forum_url) + '" target="_blank">'
-        + 'Search Forum' + (issue.message_code ? ' (' + esc(issue.message_code) + ')' : '')
-        + ' &rarr;</a>'
+        + ')">复制</button></div>'
       : '';
     const aiHtml = issue.ai_explanation
       ? '<div class="ai-section">' + esc(issue.ai_explanation) + '</div>'
       : '';
-    const refHtml = issue.ug949_ref
-      ? '<p style="margin-top:4px;color:#a0a0d0;font-size:10px">UG949: ' + esc(issue.ug949_ref) + '</p>'
-      : '';
     return '<div class="issue-card" onclick="this.classList.toggle(\'expanded\')">'
       + '<div class="title"><span>'
       + '<span class="sev-dot ' + sev + '"></span>'
-      + esc(issue.rule_id) + ': ' + esc(issue.rule_name)
+      + esc(issue.rule_id) + ': ' + esc(issue.rule_name || '')
       + '</span><span class="badge ' + bclass + '">' + esc(issue.severity) + '</span></div>'
       + '<div class="detail">'
       + '<p>' + esc(issue.message) + '</p>'
       + (issue.detail ? '<p style="margin-top:4px">' + esc(issue.detail) + '</p>' : '')
-      + fixHtml + forumHtml + aiHtml + refHtml
+      + (issue.location ? '<p style="margin-top:4px;color:var(--muted)">位置: ' + esc(issue.location) + '</p>' : '')
+      + fixHtml + aiHtml
       + '</div></div>';
   }).join('');
 }
@@ -347,12 +654,23 @@ function esc(s) {
 }
 
 function copyFix(btn, text) {
-  navigator.clipboard.writeText(text);
-  btn.textContent = 'Copied!';
-  setTimeout(() => btn.textContent = 'Copy', 1500);
+  navigator.clipboard.writeText(JSON.parse(text));
+  btn.textContent = '已复制!';
+  setTimeout(() => btn.textContent = '复制', 1500);
 }
 
-showState('waiting');
+// ── Keyboard shortcuts ──
+document.addEventListener('keydown', (e) => {
+  const state = document.querySelector('.panel.active')?.id;
+  if (state === 'panel-ready') {
+    if (e.key === '1') analyzeStage('opt');
+    else if (e.key === '2') analyzeStage('place');
+    else if (e.key === '3') analyzeStage('route');
+  }
+});
+
+// ── Init ──
+initWails();
 </script>
 </body>
 </html>

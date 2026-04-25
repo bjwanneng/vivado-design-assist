@@ -35,21 +35,24 @@ class VivadoAutoInstaller:
         return self.MARKER_START in content
 
     def install(self, port: int = DEFAULT_PORT) -> bool:
-        """安装 Tcl Server 到 init.tcl"""
-        self.init_tcl_path.parent.mkdir(parents=True, exist_ok=True)
+        """安装 Tcl Server 到 init.tcl；只读文件系统时返回 False"""
+        try:
+            self.init_tcl_path.parent.mkdir(parents=True, exist_ok=True)
 
-        existing = ""
-        if self.init_tcl_path.exists():
-            existing = self.init_tcl_path.read_text(encoding="utf-8", errors="ignore")
+            existing = ""
+            if self.init_tcl_path.exists():
+                existing = self.init_tcl_path.read_text(encoding="utf-8", errors="ignore")
 
-        if self.MARKER_START in existing:
-            existing = self._strip_injection(existing)
+            if self.MARKER_START in existing:
+                existing = self._strip_injection(existing)
 
-        tcl_payload = self._generate_tcl_server(port)
-        new_content = existing.rstrip() + "\n\n" + tcl_payload + "\n"
+            tcl_payload = self._generate_tcl_server(port)
+            new_content = existing.rstrip() + "\n\n" + tcl_payload + "\n"
 
-        self.init_tcl_path.write_text(new_content, encoding="utf-8")
-        return True
+            self.init_tcl_path.write_text(new_content, encoding="utf-8")
+            return True
+        except OSError:
+            return False
 
     def uninstall(self) -> bool:
         """卸载：恢复原始 init.tcl"""
@@ -80,12 +83,20 @@ class VivadoAutoInstaller:
 # To remove: run 'vivado-ai gui --uninstall'
 
 namespace eval vmc {{
-    variable port {port}
+    variable port 0
     variable clients {{}}
 
     proc start {{}} {{
-        catch {{
-            set ::vmc::server [socket -server ::vmc::accept $::vmc::port]
+        # 自动寻找可用端口（从 {port} 开始），支持多实例同时运行
+        for {{set try_port {port}}} {{$try_port < 19900}} {{incr try_port}} {{
+            set ::vmc::port $try_port
+            catch {{
+                set ::vmc::server [socket -server ::vmc::accept $try_port]
+            }} result
+            if {{[info exists ::vmc::server]}} {{
+                puts "VMC Tcl Server started on port $try_port"
+                break
+            }}
         }}
     }}
 
