@@ -653,6 +653,8 @@ class Backend:
     def analyze_stage(self, stage: str) -> dict:
         """TUI 按键触发：生成报告并分析指定阶段"""
         with self._lock:
+            if self._analyzing:
+                return {"error": "分析正在进行中，请等待完成"}
             if not self.tcl_client or not self.tcl_client.is_connected:
                 return {"error": "Not connected to Vivado"}
 

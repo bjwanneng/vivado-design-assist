@@ -357,6 +357,7 @@ let API_BASE = '';
 let ws = null;
 let currentFilter = 'all';
 let currentResult = null;
+let isAnalyzing = false;
 
 async function apiGet(path) {
   const r = await fetch(API_BASE + path);
@@ -546,8 +547,17 @@ async function selectInstance(index) {
 }
 
 async function analyzeStage(stage) {
+  if (isAnalyzing) {
+    alert('分析正在进行中，请等待完成');
+    return;
+  }
+  isAnalyzing = true;
   showPanel('analyzing');
-  await apiPost('/api/analyze/' + stage);
+  try {
+    await apiPost('/api/analyze/' + stage);
+  } finally {
+    isAnalyzing = false;
+  }
 }
 
 async function clearReports() {

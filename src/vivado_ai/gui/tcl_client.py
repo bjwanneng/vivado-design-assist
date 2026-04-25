@@ -275,9 +275,9 @@ class VivadoTclClient:
                     ("report_clock_networks", f"-file \"{safe_dir}/vm_clock_networks_opt.rpt\""),
                     ("report_cdc", f"-file \"{safe_dir}/vm_cdc_opt.rpt\""),
                     ("report_drc", f"-file \"{safe_dir}/vm_drc_opt.rpt\""),
-                    ("report_fail_fast", f"-file \"{safe_dir}/vm_fail_fast_opt.rpt\""),
-                    ("report_control_sets", f"-file \"{safe_dir}/vm_control_sets_opt.rpt\""),
-                    ("report_high_fanout_nets", f"-timing -max_routes 20 -file \"{safe_dir}/vm_high_fanout_opt.rpt\""),
+                    ("report_failfast", f"-file \"{safe_dir}/vm_fail_fast_opt.rpt\""),
+                    ("report_control_sets", f"-verbose -file \"{safe_dir}/vm_control_sets_opt.rpt\""),
+                    ("report_high_fanout_nets", f"-timing -max_nets 20 -file \"{safe_dir}/vm_high_fanout_opt.rpt\""),
                     ("report_design_analysis", f"-congestion -file \"{safe_dir}/vm_congestion_opt.rpt\""),
                     ("report_design_analysis", f"-logic_level_distribution -file \"{safe_dir}/vm_logic_level_opt.rpt\""),
                     ("report_ram_utilization", f"-file \"{safe_dir}/vm_ram_utilization_opt.rpt\""),
@@ -288,7 +288,7 @@ class VivadoTclClient:
                     ("report_methodology", f"-file \"{safe_dir}/vm_methodology_place.rpt\""),
                     ("report_utilization", f"-hierarchical -file \"{safe_dir}/vm_utilization_place.rpt\""),
                     ("report_clock_interaction", f"-file \"{safe_dir}/vm_clock_interaction_place.rpt\""),
-                    ("report_high_fanout_nets", f"-timing -max_routes 20 -file \"{safe_dir}/vm_high_fanout_place.rpt\""),
+                    ("report_high_fanout_nets", f"-timing -max_nets 20 -file \"{safe_dir}/vm_high_fanout_place.rpt\""),
                     ("report_design_analysis", f"-congestion -file \"{safe_dir}/vm_congestion_place.rpt\""),
                 ],
                 "route": [
@@ -298,7 +298,7 @@ class VivadoTclClient:
                     ("report_clock_interaction", f"-file \"{safe_dir}/vm_clock_interaction_route.rpt\""),
                     ("report_drc", f"-file \"{safe_dir}/vm_drc_route.rpt\""),
                     ("report_power", f"-file \"{safe_dir}/vm_power.rpt\""),
-                    ("report_high_fanout_nets", f"-timing -max_routes 20 -file \"{safe_dir}/vm_high_fanout_route.rpt\""),
+                    ("report_high_fanout_nets", f"-timing -max_nets 20 -file \"{safe_dir}/vm_high_fanout_route.rpt\""),
                 ],
             }
 
