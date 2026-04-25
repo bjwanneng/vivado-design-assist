@@ -39,8 +39,15 @@ class ClaudeProvider(LLMProvider):
                 system=system_prompt,
                 messages=[{"role": "user", "content": user_message}],
             )
+            # 安全提取文本（兼容 ThinkingBlock 等无 text 属性的块）
+            text_content = ""
+            for block in response.content:
+                if hasattr(block, "text"):
+                    text_content = block.text
+                    break
+
             return LLMResponse(
-                text=response.content[0].text,
+                text=text_content,
                 usage={
                     "prompt_tokens": response.usage.input_tokens,
                     "completion_tokens": response.usage.output_tokens,

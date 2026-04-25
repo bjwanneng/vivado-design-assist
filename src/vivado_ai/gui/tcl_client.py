@@ -283,7 +283,7 @@ class VivadoTclClient:
                     ("report_design_analysis", f"-congestion -file \"{safe_dir}/vm_congestion_opt.rpt\""),
                     ("report_design_analysis", f"-logic_level_distribution -file \"{safe_dir}/vm_logic_level_opt.rpt\""),
                     ("report_ram_utilization", f"-file \"{safe_dir}/vm_ram_utilization_opt.rpt\""),
-                    ("report_DSP_utilization", f"-file \"{safe_dir}/vm_dsp_utilization_opt.rpt\""),
+                    ("report_dsp_utilization", f"-file \"{safe_dir}/vm_dsp_utilization_opt.rpt\""),
                 ],
                 "place": [
                     ("report_timing_summary", f"-max_paths 10 -file \"{safe_dir}/vm_timing_place.rpt\""),

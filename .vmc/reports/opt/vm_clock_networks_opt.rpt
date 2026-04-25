@@ -1,0 +1,43 @@
+Copyright 1986-2022 Xilinx, Inc. All Rights Reserved. Copyright 2022-2023 Advanced Micro Devices, Inc. All Rights Reserved.
+--------------------------------------------------------------------------------------------------------------------------------------------------
+| Tool Version      : Vivado v.2023.2 (lin64) Build 4029153 Fri Oct 13 20:13:54 MDT 2023
+| Date              : Fri Apr 24 23:01:22 2026
+| Host              : lambda135.internal.sifive.com running 64-bit Red Hat Enterprise Linux release 8.10 (Ootpa)
+| Command           : report_clock_networks -file /home/wzhang/Desktop/tool/vivado-design-assist/.vmc/reports/opt/vm_clock_networks_opt.rpt
+| Design            : SiFive_CoreIPSubsystem
+| Device            : xcvu9p-flga2104
+| Speed File        : -2L  PRODUCTION 1.28 03-30-2022
+| Design State      : Optimized
+| Temperature Grade : E
+--------------------------------------------------------------------------------------------------------------------------------------------------
+
+Clock Networks Report
+
+
+Unconstrained Clocks
+-------------------
+
+Clock clock (endpoints: 16713 clock, 0 nonclock)
+Port clock
+
+Clock debug_clock (endpoints: 880 clock, 0 nonclock)
+Port debug_clock
+
+Clock debug_systemjtag_jtag_TCK (endpoints: 329 clock, 0 nonclock)
+Port debug_systemjtag_jtag_TCK
+
+Clock external_source_for_core_0_clock (endpoints: 10757 clock, 0 nonclock)
+Port external_source_for_core_0_clock
+
+Clock external_source_for_core_1_clock (endpoints: 10757 clock, 0 nonclock)
+Port external_source_for_core_1_clock
+
+Clock external_source_for_trace_0_clock (endpoints: 2348 clock, 0 nonclock)
+Port external_source_for_trace_0_clock
+
+Clock external_source_for_trace_1_clock (endpoints: 2348 clock, 0 nonclock)
+Port external_source_for_trace_1_clock
+
+Clock external_source_for_trace_com_clock (endpoints: 2675 clock, 0 nonclock)
+Port external_source_for_trace_com_clock
+

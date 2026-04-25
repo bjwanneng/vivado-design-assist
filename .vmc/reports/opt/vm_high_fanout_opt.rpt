@@ -1,0 +1,41 @@
+Copyright 1986-2022 Xilinx, Inc. All Rights Reserved. Copyright 2022-2023 Advanced Micro Devices, Inc. All Rights Reserved.
+-----------------------------------------------------------------------------------------------------------------------------------------------------------
+| Tool Version : Vivado v.2023.2 (lin64) Build 4029153 Fri Oct 13 20:13:54 MDT 2023
+| Date         : Fri Apr 24 23:02:50 2026
+| Host         : lambda135.internal.sifive.com running 64-bit Red Hat Enterprise Linux release 8.10 (Ootpa)
+| Command      : report_high_fanout_nets -timing -max_nets 20 -file /home/wzhang/Desktop/tool/vivado-design-assist/.vmc/reports/opt/vm_high_fanout_opt.rpt
+| Design       : SiFive_CoreIPSubsystem
+| Device       : xcvu9p
+-----------------------------------------------------------------------------------------------------------------------------------------------------------
+
+High Fan-out Nets Information
+
+1. Summary
+----------
+
++--------------------------------------------------------------------------------------------------------------+--------+-------------+-----------------+-----------------+
+| Net Name                                                                                                     | Fanout | Driver Type | Worst Slack(ns) | Worst Delay(ns) |
++--------------------------------------------------------------------------------------------------------------+--------+-------------+-----------------+-----------------+
+| reset                                                                                                        |   9765 | PORT        |             inf |           0.000 |
+| external_source_for_trace_com_reset                                                                          |   1578 | PORT        |             inf |           0.000 |
+| clock                                                                                                        |   1209 | PORT        |             inf |           0.000 |
+| SubsystemPrivateSbus/coupler_to_port_named_axi4_sys_port_0/bridge_for_axi4_sys_port_0/axi4deint/sel0[0]      |    904 | FDCE        |             inf |           0.108 |
+| SubsystemPrivateSbus/coupler_to_port_named_axi4_sys_port_0/bridge_for_axi4_sys_port_0/axi4deint/sel0[1]      |    903 | FDCE        |             inf |           0.102 |
+| SubsystemCbus/coupler_to_debug/fragmenter/repeater/full_reg_reg_0                                            |    580 | FDCE        |             inf |           0.118 |
+| tile_prci_domain/tile_clock_domain/tile/core_reset_REG                                                       |    559 | FDPE        |             inf |           0.335 |
+| tile_prci_domain_1/tile_clock_domain/tile/core_reset_REG                                                     |    559 | FDPE        |             inf |           0.335 |
+| tile_prci_domain/tile_uncore_domain/tlMasterClockXing_sink/bundle_in_0_d_source/enq_q/valid_0_reg_1          |    544 | LUT6        |             inf |           0.197 |
+| tile_prci_domain_1/tile_uncore_domain/tlMasterClockXing_sink/bundle_in_0_d_source/enq_q/valid_0_reg_1        |    544 | LUT6        |             inf |           0.197 |
+| tile_prci_domain/tile_uncore_domain/tlMasterClockXing_sink/bundle_in_0_d_source/enq_q/tag_array_MPORT_4_en   |    524 | LUT6        |             inf |           0.197 |
+| tile_prci_domain_1/tile_uncore_domain/tlMasterClockXing_sink/bundle_in_0_d_source/enq_q/tag_array_MPORT_4_en |    524 | LUT6        |             inf |           0.197 |
+| tile_prci_domain/tile_clock_domain/tile_clock_domain_glue/rawResetDomain/rs/SR[0]                            |    512 | LUT2        |             inf |           0.197 |
+| tile_prci_domain_1/tile_clock_domain/tile_clock_domain_glue/rawResetDomain/rs/SR[0]                          |    512 | LUT2        |             inf |           0.197 |
+| SubsystemPrivateSbus/coupler_to_port_named_axi4_sys_port_0/bridge_for_axi4_sys_port_0/axi4deint/sel0[2]      |    434 | FDCE        |             inf |           0.199 |
+| SubsystemIbus/aplicDomainWrapper/aplic/out_back_q/Q[3]                                                       |    429 | FDRE        |             inf |           0.199 |
+| tile_prci_domain/tile_clock_domain/tile/frontend/fq_q0_full                                                  |    329 | FDRE        |             inf |           0.149 |
+| tile_prci_domain_1/tile_clock_domain/tile/frontend/fq_q0_full                                                |    329 | FDRE        |             inf |           0.149 |
+| SubsystemIbus/aplicDomainWrapper/aplic/out_back_q/_out_back_q_io_deq_bits_data[2]                            |    324 | FDRE        |             inf |           0.149 |
+| tile_prci_domain/tile_clock_domain/tile/core_io_imem_resp_queue/raddr_0_reg[3]_10[0]                         |    289 | LUT5        |             inf |           0.197 |
++--------------------------------------------------------------------------------------------------------------+--------+-------------+-----------------+-----------------+
+
+
