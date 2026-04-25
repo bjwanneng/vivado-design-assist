@@ -268,13 +268,107 @@ body {
   border-radius: 6px; padding: 8px; margin-top: 6px;
   font-size: 11px; color: #c0b0e0; line-height: 1.5; white-space: pre-wrap;
 }
+
+/* Config panel */
+.config-overlay {
+  position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.6);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 1000;
+}
+.config-modal {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  width: 420px; max-width: 90vw;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+}
+.config-header {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+}
+.config-header h3 { font-size: 14px; }
+.close-btn {
+  background: none; border: none; color: var(--muted);
+  font-size: 20px; cursor: pointer;
+}
+.config-body { padding: 12px 16px; }
+.form-row { margin-bottom: 10px; }
+.form-row label {
+  display: block; font-size: 11px; color: var(--muted);
+  margin-bottom: 4px;
+}
+.form-row input, .form-row select {
+  width: 100%; padding: 6px 10px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+  font-size: 12px;
+}
+.form-row input:focus, .form-row select:focus {
+  outline: none; border-color: var(--accent);
+}
+.form-row .hint {
+  font-size: 10px; color: var(--muted); margin-top: 2px;
+  display: block;
+}
 </style>
 </head>
 <body>
 
 <div class="header">
   <h1>VMC - Methodology Checker</h1>
-  <div id="scoreDisplay" class="score pass" style="display:none">--</div>
+  <div style="display:flex;align-items:center;gap:10px">
+    <button class="btn btn-secondary" onclick="showConfigPanel()" style="margin:0">⚙️ 设置</button>
+    <div id="scoreDisplay" class="score pass" style="display:none">--</div>
+  </div>
+</div>
+
+<!-- LLM Config Panel -->
+<div id="configPanel" class="config-overlay" style="display:none">
+  <div class="config-modal">
+    <div class="config-header">
+      <h3>LLM 配置</h3>
+      <button class="close-btn" onclick="hideConfigPanel()">&times;</button>
+    </div>
+    <div class="config-body">
+      <div class="form-row">
+        <label>Provider</label>
+        <select id="cfgProvider">
+          <option value="claude">Claude (Anthropic)</option>
+          <option value="openai">OpenAI</option>
+          <option value="local">Local (Ollama/vLLM)</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <label>Model</label>
+        <input type="text" id="cfgModel" placeholder="claude-sonnet-4-20250514">
+      </div>
+      <div class="form-row">
+        <label>API Key</label>
+        <input type="password" id="cfgApiKey" placeholder="sk-...">
+        <span class="hint">留空则使用环境变量或配置文件</span>
+      </div>
+      <div class="form-row">
+        <label>Base URL (可选)</label>
+        <input type="text" id="cfgBaseUrl" placeholder="https://api.anthropic.com">
+      </div>
+      <div class="form-row">
+        <label>Max Tokens</label>
+        <input type="number" id="cfgMaxTokens" value="2048" min="256" max="8192">
+      </div>
+      <div class="form-row">
+        <label>Temperature</label>
+        <input type="number" id="cfgTemperature" value="0.3" min="0" max="1" step="0.1">
+      </div>
+      <div class="form-row" style="text-align:right">
+        <button class="btn btn-secondary" onclick="hideConfigPanel()">取消</button>
+        <button class="btn btn-primary" onclick="saveConfig()">保存</button>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- State: waiting -->
@@ -678,6 +772,70 @@ document.addEventListener('keydown', (e) => {
     else if (e.key === '3') analyzeStage('route');
   }
 });
+
+// ── Config Panel ──
+function showConfigPanel() {
+  document.getElementById('configPanel').style.display = '';
+  loadConfig();
+}
+
+function hideConfigPanel() {
+  document.getElementById('configPanel').style.display = 'none';
+}
+
+async function loadConfig() {
+  try {
+    const cfg = await apiGet('/api/config/llm');
+    document.getElementById('cfgProvider').value = cfg.provider || 'claude';
+    document.getElementById('cfgModel').value = cfg.model || '';
+    document.getElementById('cfgBaseUrl').value = cfg.base_url || '';
+    document.getElementById('cfgMaxTokens').value = cfg.max_tokens || 2048;
+    document.getElementById('cfgTemperature').value = cfg.temperature || 0.3;
+    // api_key 不返回，保持输入框为空（表示使用已有配置）
+    document.getElementById('cfgApiKey').value = '';
+    document.getElementById('cfgApiKey').placeholder = cfg.has_api_key
+      ? '已配置（留空保持不变）'
+      : 'sk-...（未配置）';
+  } catch (e) {
+    console.error('Failed to load config:', e);
+  }
+}
+
+async function saveConfig() {
+  const data = {
+    provider: document.getElementById('cfgProvider').value,
+    model: document.getElementById('cfgModel').value || undefined,
+    api_key: document.getElementById('cfgApiKey').value || undefined,
+    base_url: document.getElementById('cfgBaseUrl').value || undefined,
+    max_tokens: parseInt(document.getElementById('cfgMaxTokens').value),
+    temperature: parseFloat(document.getElementById('cfgTemperature').value),
+  };
+  // 移除 undefined 值
+  Object.keys(data).forEach(k => data[k] === undefined && delete data[k]);
+
+  try {
+    const result = await apiPost('/api/config/llm', data);
+    if (result.success) {
+      alert('配置已保存');
+      hideConfigPanel();
+    } else {
+      alert('保存失败: ' + (result.error || '未知错误'));
+    }
+  } catch (e) {
+    alert('保存失败: ' + e.message);
+  }
+}
+
+// 修改 apiPost 以支持 body 数据
+async function apiPost(path, body) {
+  const opts = { method: 'POST' };
+  if (body) {
+    opts.headers = { 'Content-Type': 'application/json' };
+    opts.body = JSON.stringify(body);
+  }
+  const r = await fetch(API_BASE + path, opts);
+  return r.json();
+}
 
 // ── Init ──
 initWails();

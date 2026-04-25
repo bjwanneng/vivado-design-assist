@@ -556,12 +556,18 @@ class Backend:
         """用 AI 逐报告分析，总结所有报告"""
         try:
             from vivado_ai.core.llm_provider import create_llm, LLMConfig
+            from vivado_ai.utils.config import get_config
+
+            cfg = get_config()
+            llm_cfg = cfg.llm
 
             llm = create_llm(LLMConfig(
-                provider="claude",
-                model="claude-sonnet-4-20250514",
-                max_tokens=2048,
-                temperature=0.3,
+                provider=llm_cfg.provider,
+                model=llm_cfg.model,
+                api_key=llm_cfg.api_key,
+                base_url=llm_cfg.base_url,
+                max_tokens=llm_cfg.max_tokens,
+                temperature=llm_cfg.temperature,
             ))
 
             stage_names = {"opt": "OPT 后", "place": "布局后", "route": "布线后"}

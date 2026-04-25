@@ -275,7 +275,7 @@ class VivadoTclClient:
                     ("report_clock_networks", f"-file \"{safe_dir}/vm_clock_networks_opt.rpt\""),
                     ("report_cdc", f"-file \"{safe_dir}/vm_cdc_opt.rpt\""),
                     ("report_drc", f"-file \"{safe_dir}/vm_drc_opt.rpt\""),
-                    ("report_failfast", f"-file \"{safe_dir}/vm_fail_fast_opt.rpt\""),
+                    ("xilinx::designutils::report_failfast", f"-file \"{safe_dir}/vm_fail_fast_opt.rpt\""),
                     ("report_control_sets", f"-verbose -file \"{safe_dir}/vm_control_sets_opt.rpt\""),
                     ("report_high_fanout_nets", f"-timing -max_nets 20 -file \"{safe_dir}/vm_high_fanout_opt.rpt\""),
                     ("report_design_analysis", f"-congestion -file \"{safe_dir}/vm_congestion_opt.rpt\""),

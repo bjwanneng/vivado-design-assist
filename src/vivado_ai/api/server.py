@@ -182,6 +182,33 @@ def uninstall():
     return state.backend.uninstall()
 
 
+# ── LLM 配置 API ──
+
+@app.get("/api/config/llm")
+def get_llm_config():
+    """获取 LLM 配置（不含 api_key）"""
+    from vivado_ai.utils.config import get_llm_config_dict
+    return get_llm_config_dict()
+
+
+@app.post("/api/config/llm")
+def update_llm_config_endpoint(data: dict):
+    """更新 LLM 配置"""
+    from vivado_ai.utils.config import update_llm_config
+    try:
+        update_llm_config(
+            provider=data.get("provider"),
+            model=data.get("model"),
+            api_key=data.get("api_key"),
+            base_url=data.get("base_url"),
+            max_tokens=data.get("max_tokens"),
+            temperature=data.get("temperature"),
+        )
+        return {"success": True}
+    except Exception as e:
+        return {"error": str(e)}
+
+
 # ── WebSocket ──
 
 @app.websocket("/ws")
