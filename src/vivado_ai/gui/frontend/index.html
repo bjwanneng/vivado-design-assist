@@ -677,8 +677,15 @@ function setFilter(filter) {
 
 function renderResults(data) {
   if (!data || data.error) {
-    document.getElementById('issueList').innerHTML =
-      '<p style="color:var(--fail)">' + (data ? data.error : '无数据') + '</p>';
+    let errHtml = '<p style="color:var(--fail)">' + (data ? data.error : '无数据') + '</p>';
+    if (data && data.reports_dir) {
+      errHtml += '<div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:10px;margin-top:10px;font-size:12px;">' +
+        '<strong style="color:var(--muted)">报告保存路径：</strong><br>' +
+        '<code style="color:var(--text);word-break:break-all;">' + esc(data.reports_dir) + '</code>' +
+        (data.stage_dir ? '<br><strong style="color:var(--muted)">当前阶段：</strong><br><code style="color:var(--text);word-break:break-all;">' + esc(data.stage_dir) + '</code>' : '') +
+        '</div>';
+    }
+    document.getElementById('issueList').innerHTML = errHtml;
     return;
   }
 
@@ -705,6 +712,16 @@ function renderResults(data) {
     aiPanel.style.display = '';
   } else {
     aiPanel.style.display = 'none';
+  }
+
+  // Report path info
+  if (data.reports_dir) {
+    const pathInfo = document.createElement('div');
+    pathInfo.style.cssText = 'background:var(--card);border:1px solid var(--border);border-radius:8px;padding:10px;margin-bottom:12px;font-size:11px;color:var(--muted);';
+    pathInfo.innerHTML = '<strong>报告路径：</strong><code style="color:var(--text);word-break:break-all;">' + esc(data.reports_dir) + '</code>' +
+      (data.stage_dir ? '<br><strong>阶段目录：</strong><code style="color:var(--text);word-break:break-all;">' + esc(data.stage_dir) + '</code>' : '');
+    const issueList = document.getElementById('issueList');
+    issueList.insertBefore(pathInfo, issueList.firstChild);
   }
 
   // Issues

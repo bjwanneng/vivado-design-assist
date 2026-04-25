@@ -325,6 +325,8 @@ class Backend:
                 "total_issues": len(result.issues),
                 "root_cause_summary": result.root_cause_summary,
                 "ai_summary": ai_summary,
+                "reports_dir": str(Path(stage_dir).parent),
+                "stage_dir": stage_dir,
                 "issues": [
                     {
                         "rule_id": i.rule_id,
@@ -706,7 +708,11 @@ class Backend:
                 self._run_analysis(stage, stage_dir)
             else:
                 with self._lock:
-                    self._analysis_result = {"error": "报告生成失败，请检查 Vivado 状态"}
+                    self._analysis_result = {
+                        "error": "报告生成失败，请检查 Vivado 状态",
+                        "reports_dir": base_dir,
+                        "stage_dir": stage_dir,
+                    }
                 self._set_state("results")
 
             self._analyzing = False
