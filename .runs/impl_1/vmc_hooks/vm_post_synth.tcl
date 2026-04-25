@@ -8,7 +8,7 @@ catch { report_timing_summary -max_paths 10 -file $vmc_reports/vm_timing_summary
 catch { report_methodology -file $vmc_reports/vm_methodology.rpt }
 catch { report_clock_interaction -file $vmc_reports/vm_clock_interaction.rpt }
 catch { report_clock_networks -file $vmc_reports/vm_clock_networks.rpt }
-catch { report_failfast -file $vmc_reports/vm_failfast.rpt }
+catch { xilinx::designutils::report_failfast -file $vmc_reports/vm_failfast.rpt }
 catch { report_qor_assessment -file $vmc_reports/vm_qor_assessment.rpt }
 catch { report_qor_suggestions -file $vmc_reports/vm_qor_suggestions.rpt }
 catch { report_utilization -file $vmc_reports/vm_utilization.rpt }

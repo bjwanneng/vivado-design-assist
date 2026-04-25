@@ -79,7 +79,9 @@ class VivadoTclClient:
 
         with self._socket_lock:
             old_timeout = self._socket.gettimeout()
-            if timeout is not None:
+            # None 表示永久阻塞（覆盖任何现有超时）
+            # 其他值表示设置指定超时
+            if timeout is not None or old_timeout is not None:
                 self._socket.settimeout(timeout)
 
             try:

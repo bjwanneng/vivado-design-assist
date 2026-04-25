@@ -648,13 +648,37 @@ class Backend:
     # ── 手动触发 ──
 
     def _get_reports_dir(self) -> str:
+        """获取报告目录，支持项目目录只读时回退到用户数据目录"""
+        # 优先使用 hooks 配置的目录
         if self.hooks:
-            return str(self.hooks.reports_dir)
+            hooks_dir = Path(self.hooks.reports_dir)
+            if self._is_writable(hooks_dir):
+                return str(hooks_dir)
+
+        # 尝试项目 runs 目录
         runs_dir = self._project_info.get("runs_dir", "")
         if runs_dir:
-            return str(Path(runs_dir) / "vmc_reports")
-        import tempfile
-        return tempfile.mkdtemp(prefix="vmc_reports_")
+            project_reports = Path(runs_dir) / "vmc_reports"
+            if self._is_writable(project_reports):
+                return str(project_reports)
+
+        # 回退到用户数据目录
+        from vivado_ai.utils.config import _get_config_dir
+        user_reports = _get_config_dir() / "reports"
+        user_reports.mkdir(parents=True, exist_ok=True)
+        return str(user_reports)
+
+    @staticmethod
+    def _is_writable(path: Path) -> bool:
+        """检查目录是否可写"""
+        try:
+            path.mkdir(parents=True, exist_ok=True)
+            test_file = path / ".write_test"
+            test_file.write_text("1")
+            test_file.unlink()
+            return True
+        except OSError:
+            return False
 
     def analyze_stage(self, stage: str) -> dict:
         """TUI 按键触发：生成报告并分析指定阶段"""
