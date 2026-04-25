@@ -1,0 +1,10 @@
+{
+  "llm": {
+    "provider": "claude",
+    "model": "kimi-k2.6",
+    "api_key": "ceb618d2-0806-4699-b759-d3e3901ca7ca",
+    "base_url": "https://ark.cn-beijing.volces.com/api/coding",
+    "max_tokens": 2048,
+    "temperature": 0.3
+  }
+}

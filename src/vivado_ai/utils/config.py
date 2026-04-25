@@ -41,27 +41,72 @@ class AppConfig(BaseSettings):
     llm: LLMSettings = Field(default_factory=LLMSettings)
 
 
-def _get_user_config_path() -> Path:
-    """获取用户配置文件路径
-    
-    优先使用项目目录下的 .vmc 目录（避免只读文件系统问题）
+def _get_config_dir() -> Path:
+    """获取配置目录
+
+    支持多种运行场景：
+    1. 开发环境：当前工作目录下的 .vmc/
+    2. 打包后（可写目录）：同上
+    3. 打包后（只读目录，如 /usr/bin）：用户数据目录
+       - Linux: ~/.local/share/vmc/
+       - macOS: ~/Library/Application Support/vmc/
+       - Windows: %APPDATA%/vmc/
+    4. 环境变量覆盖：VMC_CONFIG_DIR
     """
-    # 尝试项目目录
-    project_dir = Path(__file__).parent.parent.parent.parent / ".vmc"
+    # 环境变量优先级最高
+    env_dir = os.environ.get("VMC_CONFIG_DIR")
+    if env_dir:
+        p = Path(env_dir)
+        try:
+            p.mkdir(parents=True, exist_ok=True)
+            return p
+        except OSError:
+            pass
+
+    # 尝试当前工作目录（开发模式或便携模式）
+    cwd_vmc = Path.cwd() / ".vmc"
     try:
-        project_dir.mkdir(parents=True, exist_ok=True)
-        return project_dir / "settings.json"
+        # 测试是否可写
+        cwd_vmc.mkdir(parents=True, exist_ok=True)
+        test_file = cwd_vmc / ".write_test"
+        test_file.write_text("1")
+        test_file.unlink()
+        return cwd_vmc
     except OSError:
         pass
-    
-    # 回退到用户主目录
+
+    # 回退到平台相关的用户数据目录
     home = Path.home()
-    config_dir = home / ".config" / "vmc"
+    system = os.name  # 'nt' for Windows, 'posix' for Linux/macOS
+
+    if system == "nt":
+        # Windows: %APPDATA%/vmc
+        appdata = os.environ.get("APPDATA")
+        if appdata:
+            p = Path(appdata) / "vmc"
+        else:
+            p = home / "AppData" / "Roaming" / "vmc"
+    else:
+        # Linux/macOS
+        xdg_data = os.environ.get("XDG_DATA_HOME")
+        if xdg_data:
+            p = Path(xdg_data) / "vmc"
+        elif (home / ".local" / "share").exists():
+            p = home / ".local" / "share" / "vmc"
+        else:
+            # macOS fallback
+            p = home / "Library" / "Application Support" / "vmc"
+
     try:
-        config_dir.mkdir(parents=True, exist_ok=True)
+        p.mkdir(parents=True, exist_ok=True)
     except OSError:
         pass
-    return config_dir / "settings.json"
+    return p
+
+
+def _get_user_config_path() -> Path:
+    """获取用户配置文件路径"""
+    return _get_config_dir() / "settings.json"
 
 
 def _load_user_config() -> dict:
